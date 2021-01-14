@@ -10,7 +10,7 @@ title:  Team
 ***UCI Net ID***: skylarjh
 
 ## USER 2
-***UCI Net ID***: ucinetid2
+***UCI Net ID***: ksverdru
 
 ## USER 3
 ***UCI Net ID***: jingwl13
