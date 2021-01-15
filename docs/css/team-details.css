@@ -1,3 +1,15 @@
+:root {
+    --main-bg-color: black;
+    --button-color: #76a777;
+    --button-hover-color: white;
+}
+*
+{
+    margin: 0;
+    padding: 0;
+   
+}
+
 .navbar {
     list-style-type: none;
     margin: 0;
