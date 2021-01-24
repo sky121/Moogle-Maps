@@ -7,7 +7,7 @@
 {
     margin: 0;
     padding: 0;
-   
+    font-family: Copperplate, Helvetica, sans-serif;
 }
 
 .navbar {
@@ -42,3 +42,4 @@
 .active {
     background-color: var(--button-color);
 }
+

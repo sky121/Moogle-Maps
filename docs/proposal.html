@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moogle Maps</title>
     <link rel="stylesheet" href="css/proposal.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 </head>
 <body>
     <div>
@@ -18,36 +19,30 @@
     </div>
    
     <div>
-        <h1>Proposal</h1>
-        <h4>Summary of the Project</h4>
-        <p>
-            We will generate a start and end coordinate in the map. The starting point will be on ground level. 
-            The ending point being some coordinate 1000 blocks, not including verticality, away from the starting point. 
-            Steve will try to find the fastest achievable path within a time constraint that minimizes the time taken while he 
-            is on his way to the destination. During the journey, Steve might need to build paths and vessels to travel across different terrain. 
-            The agent will take in the coordinates of the end point, its current position, health, hunger, and the blocks it can see in order to 
-            take the best movement action to reach the goal. Movement actions include going forward and backwards, sprinting forwards, rotating the 
-            body left and right, pitching head up and down, jumping, breaking block, placing block, crafting basic objects, eating food, and interacting 
-            with objects.
+        <h1 style="text-align: center">Proposal</h1>
+        <h4 style="text-align: center">Summary of the Project</h4>
+        <p style="margin: 70px">
+            We will generate a start and end coordinate in the map. The starting point will be on ground level. The ending point 
+            being some coordinate 100-1000 blocks, not including verticality, away from the starting point. Our agent, Steve, wil 
+            spawn at the start coordinate and has a goal of reaching the end coordinate. Positive rewards include: arriving at the 
+            end coordinate and moving closer to the end coordinate. Negative rewards include: each action taken.  Steve will be given a 
+            15x15 array of the relative block heights around himself along with his current and destination coordinates. Movement actions 
+            include moving forward, backwards, left, right, and jumping. 
+
         </p>
         
-        <h4>AI/ML Algorithms</h4>
-        <p> We plan on implementing reinforcement learning using a neural network.</p>
+        <h4 style="text-align: center">AI/ML Algorithms</h4>
+        <p style="margin: 70px"> We plan on implementing reinforcement learning using a neural network.</p>
         
        
         
-        <h4>Evaluation Plan </h4>
-        <p>We will be evaluating the success of our project by using a metric of the time it takes to reach the destination or the distance of 
-            the agent from the endpoint, if it fails to make it. The baseline for our agent is to move closer to the destination 
-            coordinate under time limit without dying (falling, lava, drowning). We expect to see improvements from just random 
-            actions to movements toward the destination coordinate while avoiding natural obstacles that will slow its rate of
-             approach, maintaining hunger levels, and utilizing sprinting. In order to understand the growth of our agent, we 
-             will be graphing the agents distance from the destination coordinate and the time it takes to reach the destination 
-             as well. We will also monitor the agent's pathing by graphings its coordinates on a 2d plane to see how well the agent
-              is doing and if it is improving from just taking random paths. Through this we can visualize the internals of our 
-              algorithms to see how well our agent is learning. For the moonshot case, we would like it if the agent started building 
-              pathways or utilizing boats to go over the difficult terrain rather than avoiding them entirely. Additionally, we would l
-              ike to see our agent using sprinting and food to reduce the time it takes to reach the destination. 
+        <h4 style="text-align: center">Evaluation Plan </h4>
+        <p style="margin: 70px">We will be evaluating the success of our project by measuring the amount of actions it takes to reach the end coordinate and 
+            the distance of the agent from the end coordinate, if it fails to make it. We expect to see improvements from just random 
+            actions to movements toward the destination coordinate. The baseline is movement closer to the end coordinate. We will also 
+            monitor the agent's pathing by graphings its coordinates on a 2d plane to see how well the agent is doing and if it is improving 
+            from just taking random paths. For the moonshot case, we would like to see the agent able to reach the end coordinate through varying terrain. 
+
         </p> 
         
         
