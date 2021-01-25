@@ -3,3 +3,4 @@ Todo:
 - code own noise function (Kaleb)
 - setup main.py (done after other classes are setup)
 - setup agent class
+- setup function that generates a wall around area (Jimmy)
