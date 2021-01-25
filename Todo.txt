@@ -1,0 +1,5 @@
+Todo:
+- setup the world class to generate the world with world height, wall vs in air boundary boolean, etc.
+- code own noise function (Kaleb)
+- setup main.py (done after other classes are setup)
+- setup agent class

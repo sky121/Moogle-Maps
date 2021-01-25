@@ -183,13 +183,13 @@ class PerlinNoiseFactory(object):
 
 def getArray(size):
     p = PerlinNoiseFactory(2,4)
-    a = np.array([[p(i/size,j/size) for j in range(size)] for i in range(size)])
+    a = np.array([[p.get_plain_noise(i/size,j/size) for j in range(size)] for i in range(size)])
     a = np.abs((a*50).astype(int))
     return a
 
 from builtins import range
 from past.utils import old_div
-import MalmoPython
+from malmo import MalmoPython
 import os
 import sys
 import time
@@ -200,7 +200,7 @@ if sys.version_info[0] == 2:
 else:
     import functools
     print = functools.partial(print, flush=True)
-
+world_height = 50
 def Menger(blocktype):
     a = getArray(101)
     #draw solid chunk
@@ -208,7 +208,7 @@ def Menger(blocktype):
     #now remove holes
     for i in range(101):
         for j in range(101):
-            genstring += drawLine(i-50,0,j-50,i-50,a[i,j]+5,j-50,blocktype)+ "\n"
+            genstring += drawLine(i-50,0+world_height,j-50,i-50,a[i,j]+5+world_height,j-50,blocktype)+ "\n"
     return genstring
 
 def drawLine(x1, y1, z1, x2, y2, z2, blocktype):
@@ -242,7 +242,7 @@ missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
               <AgentSection mode="Survival">
                 <Name>MalmoTutorialBot</Name>
                 <AgentStart>
-                    <Placement x="0.5" y="20.0" z="0.5" yaw="90"/>
+                    <Placement x="0.5" y="'''+str(world_height+30)+'''" z="0.5" yaw="90"/>
                     <Inventory>
                         <InventoryItem slot="8" type="diamond_pickaxe"/>
                     </Inventory>
