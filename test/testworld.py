@@ -201,19 +201,32 @@ else:
     import functools
     print = functools.partial(print, flush=True)
 
-def Menger(array, blocktype):
+def Menger(array, blocktype, walltype, size):
     #draw solid chunk
     genstring = ""
     #now remove holes
-    for i in range(101):
-        for j in range(101):
-            genstring += drawLine(i-50,0,j-50,i-50,array[i,j]+5,j-50,blocktype)+ "\n"
+    center = size//2
+    
+    for i in range(size):
+        for j in range(size):
+            genstring += drawLine(i-center,0,j-center,i-center,array[i,j]+5,j-center,blocktype)+ "\n"
+
+
+    L = -center-1
+    h = size-center
+    for sx,sz,ex,ez in ((h,L,L,L),(h,L,h,h),(h,h,L,h),(L,L,L,h)):
+        genstring += drawCuboid(sx,0,sz,ex,50,ez,walltype) + "\n"
+    
     return genstring
 
 def drawLine(x1, y1, z1, x2, y2, z2, blocktype):
     return '<DrawLine x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
-array = getArray(101)
+def drawCuboid(x1, y1, z1, x2, y2, z2, blocktype):
+    return '<DrawCuboid x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
+
+size = 201
+array = getArray(size)
     
 missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -233,7 +246,7 @@ missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
               <ServerHandlers>
                   <FlatWorldGenerator generatorString=";"/>
                   <DrawingDecorator>
-                    ''' + Menger(array,"stone") + '''
+                    ''' + Menger(array,"stone","glass",size) + '''
                   </DrawingDecorator>
                   <ServerQuitFromTimeUp timeLimitMs="30000"/>
                   <ServerQuitWhenAnyAgentFinishes/>
@@ -243,7 +256,7 @@ missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
               <AgentSection mode="Survival">
                 <Name>MalmoTutorialBot</Name>
                 <AgentStart>
-                    <Placement x="0.5" y="''' + str(array[50,50]+7) + '''" z="0.5" yaw="90"/>
+                    <Placement x="0.5" y="''' + str(array[size//2,size//2]+7) + '''" z="0.5" yaw="90"/>
                     <Inventory>
                         <InventoryItem slot="8" type="diamond_pickaxe"/>
                     </Inventory>
