@@ -14,13 +14,13 @@ class XMLenv:
         j = math.floor(random.random()*size)
 
         #coordinate in the form of (x, y, z)
-        self.end_coordinate = (i-self.center,self.terrain_array[i,j]+6,j-self.center)
-        self.start_coordinate = (0.5, self.terrain_array[self.size//2,self.size//2]+6, 0.5)
+        self.end_coordinate = (i-self.center,self.terrain_array[i,j]+1,j-self.center)  #FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE
+        self.start_coordinate = (0.5, self.terrain_array[self.size//2,self.size//2]+1, 0.5) 
 
     def getTerrain(self):
         p = PerlinNoiseFactory(2,4)
         a = np.array([[p(i/self.size,j/self.size) for j in range(self.size)] for i in range(self.size)])
-        a = np.abs((a*50).astype(int))
+        a = np.abs((a*50).astype(int)) + 5
         return a
 
     def Menger(self, blocktype, walltype):
@@ -32,7 +32,7 @@ class XMLenv:
         
         for i in range(self.size):
             for j in range(self.size):
-                genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,self.terrain_array[i,j]+5,j-self.center,blocktype)+ "\n"
+                genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,self.terrain_array[i,j],j-self.center,blocktype)+ "\n"
 
 
         L = -self.center-1
@@ -43,9 +43,12 @@ class XMLenv:
         return genstring
 
     def drawLine(self, x1, y1, z1, x2, y2, z2, blocktype):
-        if x2 == self.start_coordinate[0] and y2 == self.start_coordinate[1]-1 and z2 == self.start_coordinate[2]:
-            blocktype = "diamond"
+
+        if x2 == math.floor(self.start_coordinate[0]) and y2 == self.start_coordinate[1]-1 and z2 == math.floor(self.start_coordinate[2]):
+            blocktype = "diamond_block"
+           
         if x2 == self.end_coordinate[0] and y2 == self.end_coordinate[1]-1 and z2 == self.end_coordinate[2]:
+            print("END COORDINATE:",self.end_coordinate)
             blocktype = "red_sandstone"
         return '<DrawLine x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
