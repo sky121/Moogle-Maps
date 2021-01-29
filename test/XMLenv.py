@@ -46,7 +46,7 @@ class XMLenv:
         if x2 == self.start_coordinate[0] and y2 == self.start_coordinate[1]-1 and z2 == self.start_coordinate[2]:
             blocktype = "diamond"
         if x2 == self.end_coordinate[0] and y2 == self.end_coordinate[1]-1 and z2 == self.end_coordinate[2]:
-            blocktype = "redstone"
+            blocktype = "red_sandstone"
         return '<DrawLine x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
     def drawCuboid(self, x1, y1, z1, x2, y2, z2, blocktype):
