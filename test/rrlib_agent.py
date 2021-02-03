@@ -16,7 +16,7 @@ import gym, ray
 from gym.spaces import Discrete, Box
 from ray.rllib.agents import ppo
 from XMLenv import XMLenv
-
+from Observations import DiscreteObservation
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):  
@@ -27,6 +27,7 @@ class MoogleMap(gym.Env):
         self.obs_size = 5
         self.max_episode_steps = 100
         self.log_frequency = 10
+        self.environment = XMLenv()
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -37,7 +38,8 @@ class MoogleMap(gym.Env):
         # Rllib Parameters
         #self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
         self.action_space = Discrete(len(self.action_dict))
-        self.observation_space = Box(0, 1, shape=(2 * self.obs_size * self.obs_size, ), dtype=np.float32)
+        self.obseravtion = DiscreteObservation(self.obs_size)
+        self.observation_space = self.obseravtion.getBox()
 
         # Malmo Parameters
         self.agent_host = MalmoPython.AgentHost()
@@ -68,6 +70,7 @@ class MoogleMap(gym.Env):
 
         # Reset Variables
         self.returns.append(self.episode_return)
+        self.environment = XMLenv()
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0
@@ -124,8 +127,8 @@ class MoogleMap(gym.Env):
 
 
     def get_mission_xml(self):
-        environment = XMLenv()
-        return environment.generateWorldXML("stone")
+        
+        return self.environment.generateWorldXML("stone")
 
     def init_malmo(self):
         """
@@ -170,10 +173,8 @@ class MoogleMap(gym.Env):
 
         Returns
             observation: <np.array> the state observation
-            allow_break_action: <bool> whether the agent is facing a diamond
         """
-        obs = np.zeros((2 * self.obs_size * self.obs_size, ))
-        allow_break_action = False
+        obs = None
 
         while world_state.is_mission_running:
             time.sleep(0.1)
@@ -187,26 +188,11 @@ class MoogleMap(gym.Env):
                 observations = json.loads(msg)
 
                 # Get observation
-                grid = observations['floorAll']
-                for i, x in enumerate(grid):
-                    obs[i] = x == 'diamond_ore' or x == 'lava'
-
-                # Rotate observation with orientation of agent
-                obs = obs.reshape((2, self.obs_size, self.obs_size))
-                yaw = observations['Yaw']
-                if yaw >= 225 and yaw < 315:
-                    obs = np.rot90(obs, k=1, axes=(1, 2))
-                elif yaw >= 315 or yaw < 45:
-                    obs = np.rot90(obs, k=2, axes=(1, 2))
-                elif yaw >= 45 and yaw < 135:
-                    obs = np.rot90(obs, k=3, axes=(1, 2))
-                obs = obs.flatten()
-
-                allow_break_action = observations['LineOfSight']['type'] == 'diamond_ore'
+                obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'], observations['Yaw'])
                 
                 break
 
-        return obs, allow_break_action
+        return obs
 
     def log_returns(self):
         """
