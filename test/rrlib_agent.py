@@ -52,7 +52,7 @@ class MoogleMap(gym.Env):
 
         # DiamondCollector Parameters
         self.obs = None
-        self.allow_break_action = False
+        #self.allow_break_action = False
         self.episode_step = 0
         self.episode_return = 0
         self.returns = []
@@ -82,7 +82,7 @@ class MoogleMap(gym.Env):
             self.log_returns()
 
         # Get Observation
-        self.obs, self.allow_break_action = self.get_observation(world_state)
+        self.obs = self.get_observation(world_state)
 
         return self.obs
 
@@ -104,7 +104,8 @@ class MoogleMap(gym.Env):
         
         command = self.action_dict[action]
         self.agent_host.sendCommand(command)
-        time.sleep(.2)
+        time.sleep(.5)
+        print("STEP:",command)
         self.episode_step += 1
        
 
@@ -112,7 +113,7 @@ class MoogleMap(gym.Env):
         world_state = self.agent_host.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs, self.allow_break_action = self.get_observation(world_state) 
+        self.obs = self.get_observation(world_state) 
 
         # Get Done
         done = not world_state.is_mission_running 

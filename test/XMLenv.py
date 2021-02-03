@@ -34,6 +34,7 @@ class XMLenv:
         
         for i in range(self.size):
             for j in range(self.size):
+                genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,100,j-self.center,"air")+ "\n"
                 genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,self.terrain_array[i,j],j-self.center,blocktype)+ "\n"
 
 
@@ -99,7 +100,7 @@ class XMLenv:
                         <max x="'''+str(int(self.obs_size/2))+'''" y="0" z="'''+str(int(self.obs_size/2))+'''"/>
                       </Grid>
                   </ObservationFromGrid>
-                  <ContinuousMovementCommands turnSpeedDegs="180"/>
+                  
                   <InventoryCommands/>
                   <AgentQuitFromReachingCommandQuota total="'''+str(self.max_episode_steps*3)+'''" />
                   <AgentQuitFromTouchingBlockType>

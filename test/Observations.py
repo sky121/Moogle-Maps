@@ -13,13 +13,13 @@ class DiscreteObservation:
     def getObservation(self, array,x,z,yaw):
         x = int(np.floor(x))
         z = int(np.floor(z))
-        obs = array[z-self.obs_size//2+self.array_size//2: z+self.obs_size//2+self.array_size//2,x-self.obs_size//2+self.array_size//2: x+self.obs_size//2+self.array_size//2]
+        obs = array[z-self.obs_size//2+self.array_size//2: z+self.obs_size//2+self.array_size//2+1,x-self.obs_size//2+self.array_size//2: x+self.obs_size//2+self.array_size//2+1]
         if yaw >= 225 and yaw < 315:
-            obs = np.rot90(obs, k=1, axes=(1, 2))
+            obs = np.rot90(obs, k=1)
         elif yaw >= 315 or yaw < 45:
-            obs = np.rot90(obs, k=2, axes=(1, 2))
+            obs = np.rot90(obs, k=2)
         elif yaw >= 45 and yaw < 135:
-            obs = np.rot90(obs, k=3, axes=(1, 2))
+            obs = np.rot90(obs, k=3)
         obs = obs.flatten()
         return obs
 
@@ -36,7 +36,7 @@ class ContinuousObservation:
     def getObservation(self,array,x,z,yaw):
         bx = int(np.floor(x))
         bz = int(np.floor(z))
-        obs = array[bz-self.obs_size//2+self.array_size//2: bz+self.obs_size//2+self.array_size//2,bx-self.obs_size//2+self.array_size//2: bx+self.obs_size//2+self.array_size//2]
+        obs = array[bz-self.obs_size//2+self.array_size//2: bz+self.obs_size//2+self.array_size//2+1,bx-self.obs_size//2+self.array_size//2: bx+self.obs_size//2+self.array_size//2+1]
         obs = obs.flatten()
 
         xrot = np.zeros((self.obs_size*self.obs_size,))
