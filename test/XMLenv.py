@@ -10,6 +10,8 @@ class XMLenv:
         self.size = size
         self.terrain_array = self.getTerrain()
         self.center = self.size//2
+        self.obs_size = 5
+        self.max_episode_steps = 100
         i = math.floor(random.random()*size)
         j = math.floor(random.random()*size)
 
@@ -85,22 +87,23 @@ class XMLenv:
                 <Name>MalmoTutorialBot</Name>
                 <AgentStart>
                     <Placement x="'''+str(self.start_coordinate[0])+'''" y="'''+str(self.start_coordinate[1])+'''" z="'''+str(self.start_coordinate[2])+'''" yaw="90"/>
-                    <Inventory>
-                        <InventoryItem slot="8" type="diamond_pickaxe"/>
-                    </Inventory>
+      
                 </AgentStart>
                 <AgentHandlers>
+                  <DiscreteMovementCommands/>
                   <ObservationFromFullStats/>
+                  <ObservationFromRay/>
                   <ObservationFromGrid>
-                      <Grid name="floor3x3">
-                        <min x="-1" y="-1" z="-1"/>
-                        <max x="1" y="-1" z="1"/>
+                      <Grid name="floorAll">
+                        <min x="-'''+str(int(self.obs_size/2))+'''" y="-1" z="-'''+str(int(self.obs_size/2))+'''"/>
+                        <max x="'''+str(int(self.obs_size/2))+'''" y="0" z="'''+str(int(self.obs_size/2))+'''"/>
                       </Grid>
                   </ObservationFromGrid>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <InventoryCommands/>
+                  <AgentQuitFromReachingCommandQuota total="'''+str(self.max_episode_steps*3)+'''" />
                   <AgentQuitFromTouchingBlockType>
-                      <Block type="diamond_block" />
+                      <Block type="red_sandstone" />
                   </AgentQuitFromTouchingBlockType>
                 </AgentHandlers>
               </AgentSection>
