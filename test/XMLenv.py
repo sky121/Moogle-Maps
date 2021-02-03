@@ -34,6 +34,7 @@ class XMLenv:
         
         for i in range(self.size):
             for j in range(self.size):
+                #clear the old stones first since malmo does not rebuild and clear for us
                 genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,100,j-self.center,"air")+ "\n"
                 genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,self.terrain_array[i,j],j-self.center,blocktype)+ "\n"
 

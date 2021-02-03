@@ -8,7 +8,7 @@ class DiscreteObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(0,100, shape=(self.obs_size * self.obs_size,), dtype=np.short)
+        return Box(0,100, shape=(self.obs_size * self.obs_size,), dtype=np.int16)
         
     def getObservation(self, array,x,z,yaw):
         x = int(np.floor(x))
@@ -31,7 +31,7 @@ class ContinuousObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(0,100, shape=(3,self.obs_size * self.obs_size), dtype=np.short)
+        return Box(0,100, shape=(3,self.obs_size * self.obs_size), dtype=np.int16)
         
     def getObservation(self,array,x,z,yaw):
         bx = int(np.floor(x))
