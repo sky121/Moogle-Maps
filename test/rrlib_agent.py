@@ -21,13 +21,14 @@ class MoogleMap(gym.Env):
 
     def __init__(self, env_config):  
         # Static Parameters
-        self.size = 50
+        self.size = 51
+        self.world_size = 51
         self.reward_density = .1
         self.penalty_density = .02
         self.obs_size = 5
-        self.max_episode_steps = 100
+        self.max_episode_steps = 1000
         self.log_frequency = 10
-        self.environment = XMLenv()
+        self.environment = XMLenv(self.max_episode_steps, self.world_size, flat_word=True)
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -38,7 +39,7 @@ class MoogleMap(gym.Env):
         # Rllib Parameters
         #self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
         self.action_space = Discrete(len(self.action_dict))
-        self.obseravtion = DiscreteObservation(self.obs_size)
+        self.obseravtion = DiscreteObservation(self.obs_size, self.world_size)
         self.observation_space = self.obseravtion.getBox()
 
         # Malmo Parameters
@@ -70,7 +71,7 @@ class MoogleMap(gym.Env):
 
         # Reset Variables
         self.returns.append(self.episode_return)
-        self.environment = XMLenv()
+        self.environment = XMLenv(self.max_episode_steps, self.world_size, flat_word=True)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0
@@ -105,7 +106,7 @@ class MoogleMap(gym.Env):
         command = self.action_dict[action]
         self.agent_host.sendCommand(command)
         time.sleep(.5)
-        print("STEP:",command)
+        #print("STEP:",command)
         self.episode_step += 1
        
 
@@ -123,7 +124,7 @@ class MoogleMap(gym.Env):
         for r in world_state.rewards:
             reward += r.getValue()
         self.episode_return += reward
-
+        print("reward received:",reward)
         return self.obs, reward, done, dict()
 
 
@@ -187,7 +188,7 @@ class MoogleMap(gym.Env):
                 # First we get the json from the observation API
                 msg = world_state.observations[-1].text
                 observations = json.loads(msg)
-
+                
                 # Get observation
                 obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'], observations['Yaw'])
                 

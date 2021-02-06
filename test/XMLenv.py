@@ -6,23 +6,31 @@ import math
 import random
 
 class XMLenv:
-    def __init__(self, size = 201):
+    def __init__(self, max_episode_steps, size = 201, flat_word=False):
         self.size = size
+        self.flat_world = flat_word
+
         self.terrain_array = self.getTerrain()
         self.center = self.size//2
         self.obs_size = 5
-        self.max_episode_steps = 100
+        self.location_reward_density = 0.5
+        self.max_episode_steps = max_episode_steps
         i = math.floor(random.random()*size)
         j = math.floor(random.random()*size)
-
+        
         #coordinate in the form of (x, y, z)
         self.end_coordinate = (i-self.center,self.terrain_array[i,j]+1,j-self.center)  #FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE
         self.start_coordinate = (0.5, self.terrain_array[self.size//2,self.size//2]+1, 0.5) 
 
     def getTerrain(self):
-        p = PerlinNoiseFactory(2,4)
-        a = np.array([[p(i/self.size,j/self.size) for j in range(self.size)] for i in range(self.size)])
-        a = np.abs((a*50).astype(int)) + 5
+        if self.flat_world:
+          p = PerlinNoiseFactory(2,4)
+          a = np.array([[0 for j in range(self.size)] for i in range(self.size)])
+          a = np.abs((a*50).astype(int)) + 5
+        else:
+          p = PerlinNoiseFactory(2,4)
+          a = np.array([[p(i/self.size,j/self.size) for j in range(self.size)] for i in range(self.size)])
+          a = np.abs((a*50).astype(int)) + 5
         return a
 
     def Menger(self, blocktype, walltype):
@@ -50,7 +58,7 @@ class XMLenv:
 
         if x2 == math.floor(self.start_coordinate[0]) and y2 == self.start_coordinate[1]-1 and z2 == math.floor(self.start_coordinate[2]):
             blocktype = "diamond_block"
-           
+            print("START COORDINATE:",self.start_coordinate)
         if x2 == self.end_coordinate[0] and y2 == self.end_coordinate[1]-1 and z2 == self.end_coordinate[2]:
             print("END COORDINATE:",self.end_coordinate)
             blocktype = "red_sandstone"
@@ -59,12 +67,53 @@ class XMLenv:
     def drawCuboid(self, x1, y1, z1, x2, y2, z2, blocktype):
         return '<DrawCuboid x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
+
+    def rewardGradient(self):
+      return_str = ''
+      for i in range(self.size):
+        for j in range(self.size):
+          xpos = i-self.center+0.5
+          zpos = j-self.center+0.5
+          distance = math.sqrt((self.end_coordinate[0]-xpos)**2+(self.end_coordinate[2]-zpos)**2)
+          start_distance = math.sqrt((self.end_coordinate[0]-self.start_coordinate[0])**2+(self.end_coordinate[2]-self.start_coordinate[2])**2)
+          reward = start_distance-distance
+          return_str+='<Marker x="'+str(xpos)+'" y="'+str(self.terrain_array[i,j]+1)+'" z="'+str(zpos)+'" reward="'+str(math.floor(reward))+'" tolerance="0.5" />'
+
+
+      return return_str
+
+      '''
+      
+      xpos = self.start_coordinate[0]
+      zpos = self.start_coordinate[2]
+      if xpos<self.end_coordinate[0]: 
+        xdir = 1
+      else:
+        xdir = -1
+      if zpos<self.end_coordinate[2]:
+        zdir = 1
+      else:
+        zdir = -1
+      xreward = 0
+      zreward = 0
+      while math.floor(xpos)!=self.end_coordinate[0]:
+        while math.floor(zpos)!=self.end_coordinate[2]:
+          
+          return_str+='<Marker x="'+str(xpos)+'" y="'+str(self.terrain_array[math.floor(xpos)+self.center,math.floor(zpos)+self.center]+1)+'" z="'+str(zpos)+'" reward="'+str(math.floor(xreward+zreward))+'" tolerance="0.5" />'
+          zpos+=zdir
+          zreward+=self.location_reward_density
+        zpos = self.start_coordinate[2]
+        xpos+=xdir
+        xreward+=self.location_reward_density
+
+      '''
+      
     def generateWorldXML(self, blocktype):
         missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             
               <About>
-                <Summary>Hello world!</Summary>
+                <Summary>Moogler Mapper!</Summary>
               </About>
               
             <ServerSection>
@@ -80,7 +129,7 @@ class XMLenv:
                   <DrawingDecorator>
                     ''' + self.Menger(blocktype,"glass") + '''
                   </DrawingDecorator>
-                  <ServerQuitFromTimeUp timeLimitMs="30000"/>
+                  <ServerQuitFromTimeUp timeLimitMs="300000"/>
                   <ServerQuitWhenAnyAgentFinishes/>
                 </ServerHandlers>
               </ServerSection>
@@ -95,6 +144,12 @@ class XMLenv:
                   <DiscreteMovementCommands/>
                   <ObservationFromFullStats/>
                   <ObservationFromRay/>
+                  <RewardForTouchingBlockType>
+                    <Block type='red_sandstone' reward='100'/>
+                  </RewardForTouchingBlockType>
+                  <RewardForReachingPosition>
+                    ''' + self.rewardGradient() + '''
+                  </RewardForReachingPosition>
                   <ObservationFromGrid>
                       <Grid name="floorAll">
                         <min x="-'''+str(int(self.obs_size/2))+'''" y="-1" z="-'''+str(int(self.obs_size/2))+'''"/>
@@ -103,7 +158,7 @@ class XMLenv:
                   </ObservationFromGrid>
                   
                   <InventoryCommands/>
-                  <AgentQuitFromReachingCommandQuota total="'''+str(self.max_episode_steps*3)+'''" />
+                  <AgentQuitFromReachingCommandQuota total="'''+str(self.max_episode_steps)+'''" />
                   <AgentQuitFromTouchingBlockType>
                       <Block type="red_sandstone" />
                   </AgentQuitFromTouchingBlockType>
