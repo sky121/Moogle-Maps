@@ -21,19 +21,22 @@ class MoogleMap(gym.Env):
 
     def __init__(self, env_config):  
         # Static Parameters
-        self.size = 51
         self.world_size = 51
-        self.reward_density = .1
-        self.penalty_density = .02
         self.obs_size = 5
-        self.max_episode_steps = 1000
+        self.move_reward_scale = 2
+        self.max_episode_steps = 100
         self.log_frequency = 10
-        self.environment = XMLenv(self.max_episode_steps, self.world_size, flat_word=True)
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
             2: 'turn -1',  # Turn 90 degrees to the left
             3: 'jumpmove 1'   
+        }
+        self.reward_dict = {
+            0: -1,  # Move one block forward
+            1: -1,  # Turn 90 degrees to the right
+            2: -1,  # Turn 90 degrees to the left
+            3: -2   
         }
 
         # Rllib Parameters
@@ -53,6 +56,9 @@ class MoogleMap(gym.Env):
 
         # DiamondCollector Parameters
         self.obs = None
+        self.prev_position = np.array([0,0])
+        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=True)
+        
         #self.allow_break_action = False
         self.episode_step = 0
         self.episode_return = 0
@@ -71,7 +77,7 @@ class MoogleMap(gym.Env):
 
         # Reset Variables
         self.returns.append(self.episode_return)
-        self.environment = XMLenv(self.max_episode_steps, self.world_size, flat_word=True)
+        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=True)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0
@@ -83,7 +89,7 @@ class MoogleMap(gym.Env):
             self.log_returns()
 
         # Get Observation
-        self.obs = self.get_observation(world_state)
+        self.obs, self.prev_position = self.get_observation(world_state)
 
         return self.obs
 
@@ -114,17 +120,25 @@ class MoogleMap(gym.Env):
         world_state = self.agent_host.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs = self.get_observation(world_state) 
+        self.obs, pos = self.get_observation(world_state) 
 
         # Get Done
         done = not world_state.is_mission_running 
 
         # Get Reward
         reward = 0
-        for r in world_state.rewards:
-            reward += r.getValue()
+
+        #reward += (np.linalg.norm(self.prev_position - self.environment.getGoal()) - np.linalg.norm(pos - self.environment.getGoal()))*self.move_reward_scale #L2 for continuous
+        reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(np.abs(pos - self.environment.getGoal())))*self.move_reward_scale #L1 for discrete
+        
+        reward += self.reward_dict[action]
+
+        self.prev_position = pos
+        
         self.episode_return += reward
         print("reward received:",reward)
+
+        
         return self.obs, reward, done, dict()
 
 
@@ -190,11 +204,11 @@ class MoogleMap(gym.Env):
                 observations = json.loads(msg)
                 
                 # Get observation
-                obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'], observations['Yaw'])
+                obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'],observations['YPos'], observations['Yaw'])
                 
                 break
 
-        return obs
+        return obs, np.array([observations['XPos'], observations['ZPos']])
 
     def log_returns(self):
         """
