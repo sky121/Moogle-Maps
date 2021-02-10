@@ -8,12 +8,13 @@ class DiscreteObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(0,100, shape=(self.obs_size * self.obs_size,), dtype=np.int16)
+        return Box(-50,50, shape=(self.obs_size * self.obs_size,), dtype=np.int16)
         
-    def getObservation(self, array,x,z,yaw):
+    def getObservation(self, array,x,z,y,yaw):
+        y = int(y)
         x = int(np.floor(x))
         z = int(np.floor(z))
-        obs = array[z-self.obs_size//2+self.array_size//2: z+self.obs_size//2+self.array_size//2+1,x-self.obs_size//2+self.array_size//2: x+self.obs_size//2+self.array_size//2+1]
+        obs = array[z-self.obs_size//2+self.array_size//2  + self.obs_size : z+self.obs_size//2+self.array_size//2+1  + self.obs_size ,x-self.obs_size//2+self.array_size//2  + self.obs_size: x+self.obs_size//2+self.array_size//2+1 + self.obs_size]
         if yaw >= 225 and yaw < 315:
             obs = np.rot90(obs, k=1)
         elif yaw >= 315 or yaw < 45:
@@ -21,7 +22,7 @@ class DiscreteObservation:
         elif yaw >= 45 and yaw < 135:
             obs = np.rot90(obs, k=3)
         obs = obs.flatten()
-        return obs
+        return obs - y
 
 
 class ContinuousObservation:
@@ -31,13 +32,14 @@ class ContinuousObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(0,100, shape=(3,self.obs_size * self.obs_size), dtype=np.int16)
+        return Box(-50,50, shape=(3,self.obs_size * self.obs_size), dtype=np.int16)
         
-    def getObservation(self,array,x,z,yaw):
+    def getObservation(self,array,x,z,y,yaw): # need to add padding
+        y = int(y)
         bx = int(np.floor(x))
         bz = int(np.floor(z))
         obs = array[bz-self.obs_size//2+self.array_size//2: bz+self.obs_size//2+self.array_size//2+1,bx-self.obs_size//2+self.array_size//2: bx+self.obs_size//2+self.array_size//2+1]
-        obs = obs.flatten()
+        obs = obs.flatten() - y
 
         xrot = np.zeros((self.obs_size*self.obs_size,))
         yrot = np.zeros((self.obs_size*self.obs_size,))
