@@ -191,6 +191,8 @@ class MoogleMap(gym.Env):
             observation: <np.array> the state observation
         """
         obs = None
+        point = np.array([.5,.5])
+
 
         while world_state.is_mission_running:
             time.sleep(0.1)
@@ -205,10 +207,11 @@ class MoogleMap(gym.Env):
                 
                 # Get observation
                 obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'],observations['YPos'], observations['Yaw'])
+                point = np.array([observations['XPos'], observations['ZPos']])
                 
                 break
 
-        return obs, np.array([observations['XPos'], observations['ZPos']])
+        return obs, point
 
     def log_returns(self):
         """
