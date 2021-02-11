@@ -112,7 +112,7 @@ class MoogleMap(gym.Env):
         
         command = self.action_dict[action]
         self.agent_host.sendCommand(command)
-        time.sleep(.5)
+        time.sleep(.1)
         #print("STEP:",command)
         self.episode_step += 1
        
@@ -147,7 +147,7 @@ class MoogleMap(gym.Env):
 
     def get_mission_xml(self):
         
-        return self.environment.generateWorldXML("stone")
+        return self.environment.generateWorldXML("sandstone")
 
     def init_malmo(self):
         """
