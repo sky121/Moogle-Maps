@@ -9,7 +9,7 @@ class DiscreteObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(-60,60, shape=(self.obs_size * self.obs_size + 2,), dtype=np.int16)
+        return Box(-80,80, shape=(self.obs_size * self.obs_size + 2,), dtype=np.int16)
         
     def getObservation(self, array,x,z,y,yaw, goal):
         #print(f"x: {x}, z: {z}, goal: {goal}")
