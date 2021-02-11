@@ -22,7 +22,7 @@ class XMLenv:
         # coordinate in the form of (x, y, z)
         # FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE (floor -)
         self.end_coordinate = (
-            i-self.center, self.terrain_array[i + self.obs_size, j + self.obs_size]+1, j-self.center)
+            i-self.center, self.terrain_array[j + self.obs_size, i + self.obs_size]+1, j-self.center)
         self.goal = np.array(
             [self.end_coordinate[0]+.5, self.end_coordinate[2]+.5])
         self.start_coordinate = (
@@ -33,10 +33,8 @@ class XMLenv:
 
     def getTerrain(self):
         if self.flat_world:
-            p = PerlinNoiseFactory(2, 4)
-            a = np.array([[0 for j in range(self.size)]
+            a = np.array([[5 for j in range(self.size)]
                           for i in range(self.size)])
-            a = np.abs((a*50).astype(int)) + 5
         else:
             p = PerlinNoiseFactory(2, 4)
             a = np.array([[p(i/self.size, j/self.size)
@@ -90,7 +88,7 @@ class XMLenv:
         return (i-self.center) == self.end_coordinate[0] and (j-self.center) == self.end_coordinate[2]
 
     def _ezTerrain(self, i, j):
-        return self.terrain_array[i + self.obs_size, j + self.obs_size]
+        return self.terrain_array[j + self.obs_size, i + self.obs_size]
 
     def _ezLine(self, i, j, low, high, blocktype):
         return self.drawLine(i-self.center, low, j-self.center, i-self.center, high, j-self.center, blocktype) + "\n"

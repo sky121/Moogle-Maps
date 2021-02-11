@@ -44,6 +44,8 @@ class MoogleMap(gym.Env):
             3: -2
         }
 
+        self.debug_obs = False
+
         # Rllib Parameters
         #self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
         self.action_space = Discrete(len(self.action_dict))
@@ -71,6 +73,9 @@ class MoogleMap(gym.Env):
         self.returns = []
         self.steps = []
 
+        self.episode_dist_return = 0
+        self.dist_returns = []
+
         # for ploting the agent's trajectory
         self.coordinates = []
         self.graph_num = 0
@@ -84,6 +89,10 @@ class MoogleMap(gym.Env):
         """
 
         self.returns.append(self.episode_return)
+        self.dist_returns.append(self.episode_dist_return)
+        
+        self.environment = XMLenv(
+            self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
 
@@ -91,14 +100,15 @@ class MoogleMap(gym.Env):
         if len(self.returns) > self.log_frequency + 1 and \
                 len(self.returns) % self.log_frequency == 0:
             self.log_returns()
-
-        self.environment = XMLenv(
-            self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
+            self.log_dist_return()
+            self.draw_agent_trajectory()
+        
 
         # Reset Variables
+        self.episode_dist_return = 0
         self.episode_return = 0
         self.episode_step = 0
-        self.coordinates = []
+        self.coordinates.clear()
 
         # Reset Malmo and the envrionment
         world_state = self.init_malmo()
@@ -145,12 +155,15 @@ class MoogleMap(gym.Env):
         # reward += (np.linalg.norm(self.prev_position - self.environment.getGoal()) - np.linalg.norm(pos - self.environment.getGoal()))*self.move_reward_scale #L2 for continuous
         reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
             np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
+
+        self.episode_dist_return += reward
+        
         reward += np.allclose(self.environment.getGoal(),
                               pos) * self.reach_end_reward
         reward += self.reward_dict[action]
 
-        self.coordinates.append(self.prev_position)
         self.prev_position = pos
+        self.coordinates.append(pos)
 
         self.episode_return += reward
         #print("reward received:",reward)
@@ -225,7 +238,7 @@ class MoogleMap(gym.Env):
 
                 # Get observation
                 obs = self.obseravtion.getObservation(
-                    self.environment.terrain_array, observations['XPos'], observations['ZPos'], observations['YPos'], observations['Yaw'], self.environment.getGoal())
+                    self.environment.terrain_array, observations['XPos'], observations['ZPos'], observations['YPos'], observations['Yaw'], self.environment.getGoal(), self.debug_obs)
                 point = np.array([observations['XPos'], observations['ZPos']])
 
                 break
@@ -244,13 +257,12 @@ class MoogleMap(gym.Env):
         ax.spines['top'].set_color('none')
 
         ax.scatter(
-            self.environment.start_coordinate[0], self.environment.start_coordinate[2], c="b")
+            self.environment.start_coordinate[0], self.environment.start_coordinate[1], c="b")
         ax.scatter(
-            self.environment.end_coordinate[0], self.environment.end_coordinate[2], c="r")
+            self.environment.end_coordinate[0], self.environment.end_coordinate[1], c="r")
 
         plt.xlim([-self.world_size/2, self.world_size/2])
         plt.ylim([-self.world_size/2, self.world_size/2])
-
         xpos, ypos = zip(*self.coordinates)
         ax.plot(xpos, ypos)
         plt.title('Agent coordinate')
@@ -265,7 +277,7 @@ class MoogleMap(gym.Env):
             steps (list): list of global steps after each episode
             returns (list): list of total return of each episode
         """
-        self.draw_agent_trajectory()
+        #self.draw_agent_trajectory()
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.returns[1:], box, mode='same')
@@ -274,12 +286,30 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('./trajectory_graphs/returns.png')
+        plt.savefig('returns.png')
 
         # plot the agent's trajectory
 
-        with open('./trajectory_graphs/returns.txt', 'w') as f:
+        with open('returns.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
+                f.write("{}\t{}\n".format(step, value))
+
+
+    def log_dist_return(self):
+        
+        box = np.ones(self.log_frequency) / self.log_frequency
+        returns_smooth = np.convolve(self.dist_returns[1:], box, mode='same')
+        plt.clf()
+        plt.plot(self.steps[1:], returns_smooth)
+        plt.title('Moogle Map')
+        plt.ylabel('Distance Value')
+        plt.xlabel('Steps')
+        plt.savefig('returns_dist.png')
+
+        # plot the agent's trajectory
+
+        with open('returns_dist.txt', 'w') as f:
+            for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
 
