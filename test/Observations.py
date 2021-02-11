@@ -12,6 +12,7 @@ class DiscreteObservation:
         return Box(-60,60, shape=(self.obs_size * self.obs_size + 2,), dtype=np.int16)
         
     def getObservation(self, array,x,z,y,yaw, goal):
+        #print(f"x: {x}, z: {z}, goal: {goal}")
         dx = round(goal[0]-x)
         dz = round(goal[1]-z)
         append = np.array([dx,dz])
@@ -30,6 +31,9 @@ class DiscreteObservation:
             obs = np.rot90(obs, k=3)
             append = np.array([-dz,dx])
         obs = obs.flatten() - y
+        #print("Observation:\n",obs)
+        #print("Append:",append)
+        
         obs = np.insert(obs,0,append)
         return obs
 

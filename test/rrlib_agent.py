@@ -72,8 +72,6 @@ class MoogleMap(gym.Env):
         Returns
             observation: <np.array> flattened initial obseravtion
         """
-        # Reset Malmo
-        world_state = self.init_malmo()
 
         # Reset Variables
         self.returns.append(self.episode_return)
@@ -82,6 +80,9 @@ class MoogleMap(gym.Env):
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0
         self.episode_step = 0
+
+        # Reset Malmo
+        world_state = self.init_malmo()
 
         # Log
         if len(self.returns) > self.log_frequency + 1 and \
@@ -136,7 +137,9 @@ class MoogleMap(gym.Env):
         self.prev_position = pos
         
         self.episode_return += reward
-        print("reward received:",reward)
+        #print("reward received:",reward)
+
+        #time.sleep(60) ####
 
         
         return self.obs, reward, done, dict()

@@ -20,15 +20,22 @@ class Agent:
         pass
 
     def reward(self):
-        # get to destination give u
+        #get to destination give u 
         pass
 
     def train(self):
         pass
-
+    
     def step(self, action):
 
         command = self.action_dict[action]
         self.agent_host.sendCommand(command)
         time.sleep(.2)
         self.episode_step += 1
+        
+
+
+
+    
+
+

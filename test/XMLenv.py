@@ -19,7 +19,7 @@ class XMLenv:
         j = math.floor(random.random()*size)
         
         #coordinate in the form of (x, y, z)
-        self.end_coordinate = (i-self.center,self.terrain_array[i + self.obs_size,j + self.obs_size]+1,j-self.center)  #FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE
+        self.end_coordinate = (i-self.center,self.terrain_array[i + self.obs_size,j + self.obs_size]+1,j-self.center)  #FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE (floor -)
         self.goal = np.array([self.end_coordinate[0]+.5,self.end_coordinate[2]+.5])
         self.start_coordinate = (0.5, self.terrain_array[self.size//2 + self.obs_size,self.size//2 + self.obs_size]+1, 0.5)
 
