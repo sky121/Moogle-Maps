@@ -37,7 +37,7 @@ class XMLenv:
           a = np.abs((a*50).astype(int)) + 5
 
 
-        a = np.pad(a,self.obs_size,constant_values = 200)
+        a = np.pad(a,self.obs_size,constant_values = 80)
 
         if self.debug: print("Terrain Map:",a)
         return a
@@ -126,9 +126,6 @@ class XMLenv:
                   <DiscreteMovementCommands/>
                   <ObservationFromFullStats/>
                   <ObservationFromRay/>
-                  <RewardForTouchingBlockType>
-                    <Block type='red_sandstone' reward='100'/>
-                  </RewardForTouchingBlockType>
                   <ObservationFromGrid>
                       <Grid name="floorAll">
                         <min x="-'''+str(int(self.obs_size/2))+'''" y="-1" z="-'''+str(int(self.obs_size/2))+'''"/>
