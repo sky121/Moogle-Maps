@@ -251,8 +251,6 @@ class MoogleMap(gym.Env):
         plt.xlim([-self.world_size/2, self.world_size/2])
         plt.ylim([-self.world_size/2, self.world_size/2])
 
-        print(self.coordinates)
-
         xpos, ypos = zip(*self.coordinates)
         ax.plot(xpos, ypos)
         plt.title('Agent coordinate')
