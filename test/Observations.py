@@ -1,6 +1,7 @@
 import numpy as np
 from gym.spaces import Box
 
+
 class DiscreteObservation:
 
     def __init__(self,obs_size,array_size = 201):
@@ -8,21 +9,29 @@ class DiscreteObservation:
         self.array_size = array_size
 
     def getBox(self):
-        return Box(-50,50, shape=(self.obs_size * self.obs_size,), dtype=np.int16)
+        return Box(-60,60, shape=(self.obs_size * self.obs_size + 2,), dtype=np.int16)
         
-    def getObservation(self, array,x,z,y,yaw):
+    def getObservation(self, array,x,z,y,yaw, goal):
+        dx = round(goal[0]-x)
+        dz = round(goal[1]-z)
+        append = [dx,dz]
+        
         y = int(y)
         x = int(np.floor(x))
         z = int(np.floor(z))
         obs = array[z-self.obs_size//2+self.array_size//2  + self.obs_size : z+self.obs_size//2+self.array_size//2+1  + self.obs_size ,x-self.obs_size//2+self.array_size//2  + self.obs_size: x+self.obs_size//2+self.array_size//2+1 + self.obs_size]
-        if yaw >= 225 and yaw < 315:
+        if yaw >= 225 and yaw < 315: # 270 deg
             obs = np.rot90(obs, k=1)
-        elif yaw >= 315 or yaw < 45:
+            append = [dz,-dx]
+        elif yaw >= 315 or yaw < 45: # 0 deg
             obs = np.rot90(obs, k=2)
-        elif yaw >= 45 and yaw < 135:
+            append = [-dx,-dz]
+        elif yaw >= 45 and yaw < 135:# 90 deg
             obs = np.rot90(obs, k=3)
-        obs = obs.flatten()
-        return obs - y
+            append = [-dz,dx]
+        obs = obs.flatten() - y
+        obs = np.insert(obs,0,append)
+        return obs
 
 
 class ContinuousObservation:
@@ -34,7 +43,7 @@ class ContinuousObservation:
     def getBox(self):
         return Box(-50,50, shape=(3,self.obs_size * self.obs_size), dtype=np.int16)
         
-    def getObservation(self,array,x,z,y,yaw): # need to add padding
+    def getObservation(self,array,x,z,y,yaw): # need to add padding and reward
         y = int(y)
         bx = int(np.floor(x))
         bz = int(np.floor(z))
