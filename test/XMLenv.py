@@ -15,8 +15,8 @@ class XMLenv:
         self.center = self.size//2
         self.location_reward_density = 0.5
         self.max_episode_steps = max_episode_steps
-        i = math.floor(random.random()*size)
-        j = math.floor(random.random()*size)
+        i = math.floor(random.random())
+        j = math.floor(random.random())
         
         #coordinate in the form of (x, y, z)
         self.end_coordinate = (i-self.center,self.terrain_array[i + self.obs_size,j + self.obs_size]+1,j-self.center)  #FLOOR AGENTS X AND Z COORDINATES TO CHECK IF ITS AT THE END COORDINATE

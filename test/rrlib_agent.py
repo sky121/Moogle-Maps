@@ -190,7 +190,7 @@ class MoogleMap(gym.Env):
         Returns
             observation: <np.array> the state observation
         """
-        obs = None
+        obs = np.zeros((self.obs_size*self.obs_size+2,))
         point = np.array([.5,.5])
 
 

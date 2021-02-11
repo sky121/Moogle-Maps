@@ -14,7 +14,7 @@ class DiscreteObservation:
     def getObservation(self, array,x,z,y,yaw, goal):
         dx = round(goal[0]-x)
         dz = round(goal[1]-z)
-        append = [dx,dz]
+        append = np.array([dx,dz])
         
         y = int(y)
         x = int(np.floor(x))
@@ -22,13 +22,13 @@ class DiscreteObservation:
         obs = array[z-self.obs_size//2+self.array_size//2  + self.obs_size : z+self.obs_size//2+self.array_size//2+1  + self.obs_size ,x-self.obs_size//2+self.array_size//2  + self.obs_size: x+self.obs_size//2+self.array_size//2+1 + self.obs_size]
         if yaw >= 225 and yaw < 315: # 270 deg
             obs = np.rot90(obs, k=1)
-            append = [dz,-dx]
+            append = np.array([dz,-dx])
         elif yaw >= 315 or yaw < 45: # 0 deg
             obs = np.rot90(obs, k=2)
-            append = [-dx,-dz]
+            append = np.array([-dx,-dz])
         elif yaw >= 45 and yaw < 135:# 90 deg
             obs = np.rot90(obs, k=3)
-            append = [-dz,dx]
+            append = np.array([-dz,dx])
         obs = obs.flatten() - y
         obs = np.insert(obs,0,append)
         return obs
