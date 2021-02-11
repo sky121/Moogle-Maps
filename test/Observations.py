@@ -11,16 +11,19 @@ class DiscreteObservation:
     def getBox(self):
         return Box(-80,80, shape=(self.obs_size * self.obs_size + 2,), dtype=np.int16)
         
-    def getObservation(self, array,x,z,y,yaw, goal):
-        #print(f"x: {x}, z: {z}, goal: {goal}")
+    def getObservation(self, array,x,z,y,yaw, goal, debug = False):
+        if debug: print(f"[OBS DEBUG] x: {x}, z: {z}, yaw: {yaw}, goal: {goal}")
         dx = round(goal[0]-x)
         dz = round(goal[1]-z)
         append = np.array([dx,dz])
         
         y = int(y)
-        x = int(np.floor(x))
-        z = int(np.floor(z))
-        obs = array[z-self.obs_size//2+self.array_size//2  + self.obs_size : z+self.obs_size//2+self.array_size//2+1  + self.obs_size ,x-self.obs_size//2+self.array_size//2  + self.obs_size: x+self.obs_size//2+self.array_size//2+1 + self.obs_size]
+        x = round(x-.5)
+        z = round(z-.5)
+
+        framing = self.array_size//2  + self.obs_size     
+        obs = array[(z) - (self.obs_size//2) + framing : (z) + (self.obs_size//2+1) + framing ,x - (self.obs_size//2) + framing : x + (self.obs_size//2+1) + framing]
+        #obs = np.flip(obs,axis=0)
         if yaw >= 225 and yaw < 315: # 270 deg
             obs = np.rot90(obs, k=1)
             append = np.array([dz,-dx])
@@ -30,11 +33,13 @@ class DiscreteObservation:
         elif yaw >= 45 and yaw < 135:# 90 deg
             obs = np.rot90(obs, k=3)
             append = np.array([-dz,dx])
-        obs = obs.flatten() - y
-        #print("Observation:\n",obs)
-        #print("Append:",append)
+        if debug: print(f"[OBS DEBUG] Observation:\n{obs - (y-1)}")
+        obs = obs.flatten() - (y-1)
+        if debug: print("[OBS DEBUG] Append <v,h>:",append)
         
         obs = np.insert(obs,0,append)
+
+        if debug: input("[OBS DEBUG] Waiting for input.....")
         return obs
 
 
