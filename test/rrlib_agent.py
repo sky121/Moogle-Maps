@@ -206,7 +206,7 @@ class MoogleMap(gym.Env):
                 observations = json.loads(msg)
                 
                 # Get observation
-                obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'],observations['YPos'], observations['Yaw'])
+                obs = self.obseravtion.getObservation(self.environment.terrain_array,observations['XPos'], observations['ZPos'],observations['YPos'], observations['Yaw'], self.environment.getGoal())
                 point = np.array([observations['XPos'], observations['ZPos']])
                 
                 break
