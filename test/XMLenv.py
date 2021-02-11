@@ -6,10 +6,10 @@ import math
 import random
 
 class XMLenv:
-    def __init__(self, max_episode_steps, size = 201, obs_size=5, flat_word=False):
+    def __init__(self, max_episode_steps, size = 201, obs_size=5, flat_word=False, debug=False):
         self.size = size
         self.flat_world = flat_word
-
+        self.debug = debug
         self.obs_size = obs_size
         self.terrain_array = self.getTerrain()
         self.center = self.size//2
@@ -38,6 +38,8 @@ class XMLenv:
 
 
         a = np.pad(a,self.obs_size,constant_values = 200)
+
+        if self.debug: print("Terrain Map:",a)
         return a
 
     def Menger(self, blocktype, walltype):
@@ -50,8 +52,17 @@ class XMLenv:
         for i in range(self.size):
             for j in range(self.size):
                 #clear the old stones first since malmo does not rebuild and clear for us
-                genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,100,j-self.center,"air")+ "\n"
-                genstring += self.drawLine(i-self.center,0,j-self.center,i-self.center,self.terrain_array[i + self.obs_size,j + self.obs_size],j-self.center,blocktype)+ "\n"
+                genstring += self._ezLine(i,j,0,100,"air")
+
+                if self._isEnd(i,j):
+                    if self.debug: print("END COORDINATE:",self.end_coordinate)
+                    genstring += self._ezLine(i,j,0,self._ezTerrain(i,j),"red_sandstone")
+                    genstring += self._ezLine(i,j,self._ezTerrain(i,j)+1,self._ezTerrain(i,j)+1,"torch")
+                elif self._isStart(i,j):
+                    if self.debug: print("START COORDINATE:",self.start_coordinate)
+                    genstring += self._ezLine(i,j,0,self._ezTerrain(i,j),"diamond_block")
+                else:
+                    genstring += self._ezLine(i,j,0,self._ezTerrain(i,j),blocktype)
 
 
         L = -self.center-1
@@ -61,14 +72,19 @@ class XMLenv:
         
         return genstring
 
-    def drawLine(self, x1, y1, z1, x2, y2, z2, blocktype):
+    def _isStart(self,i,j):
+        return (i-self.center) == math.floor(self.start_coordinate[0]) and (j-self.center) == math.floor(self.start_coordinate[2])
 
-        if x2 == math.floor(self.start_coordinate[0]) and y2 == self.start_coordinate[1]-1 and z2 == math.floor(self.start_coordinate[2]):
-            blocktype = "diamond_block"
-            print("START COORDINATE:",self.start_coordinate)
-        if x2 == self.end_coordinate[0] and y2 == self.end_coordinate[1]-1 and z2 == self.end_coordinate[2]:
-            print("END COORDINATE:",self.end_coordinate)
-            blocktype = "red_sandstone"
+    def _isEnd(self,i,j):
+        return (i-self.center) == self.end_coordinate[0] and (j-self.center) == self.end_coordinate[2]
+
+    def _ezTerrain(self,i,j):
+        return self.terrain_array[i + self.obs_size,j + self.obs_size]
+
+    def _ezLine(self,i,j,low,high,blocktype):
+        return self.drawLine(i-self.center,low,j-self.center,i-self.center,high,j-self.center,blocktype)+ "\n"
+
+    def drawLine(self, x1, y1, z1, x2, y2, z2, blocktype):
         return '<DrawLine x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
     def drawCuboid(self, x1, y1, z1, x2, y2, z2, blocktype):
@@ -85,13 +101,13 @@ class XMLenv:
             <ServerSection>
               <ServerInitialConditions>
                 <Time>
-                    <StartTime>1000</StartTime>
+                    <StartTime>17843</StartTime>
                     <AllowPassageOfTime>false</AllowPassageOfTime>
                 </Time>
                 <Weather>clear</Weather>
               </ServerInitialConditions>
               <ServerHandlers>
-                  <FlatWorldGenerator generatorString=";"/>
+                  <FlatWorldGenerator generatorString="3;minecraft:sandstone,minecraft:sand;1;"/>
                   <DrawingDecorator>
                     ''' + self.Menger(blocktype,"glass") + '''
                   </DrawingDecorator>

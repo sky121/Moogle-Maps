@@ -26,9 +26,11 @@ class MoogleMap(gym.Env):
         # Static Parameters
         self.world_size = 51
         self.obs_size = 5
-        self.move_reward_scale = 2
+        self.move_reward_scale = 5  # norm 2
         self.max_episode_steps = 100
         self.log_frequency = 1
+        self.flatland = False
+        self.reach_end_reward = 20
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -61,7 +63,7 @@ class MoogleMap(gym.Env):
         self.obs = None
         self.prev_position = np.array([0, 0])
         self.environment = XMLenv(
-            self.max_episode_steps, self.world_size, self.obs_size, flat_word=True)
+            self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
 
         #self.allow_break_action = False
         self.episode_step = 0
@@ -81,6 +83,8 @@ class MoogleMap(gym.Env):
         """
 
         self.returns.append(self.episode_return)
+        self.environment = XMLenv(
+            self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
 
@@ -122,7 +126,7 @@ class MoogleMap(gym.Env):
 
         command = self.action_dict[action]
         self.agent_host.sendCommand(command)
-        time.sleep(.5)
+        time.sleep(.1)
         # print("STEP:",command)
         self.episode_step += 1
 
@@ -141,7 +145,8 @@ class MoogleMap(gym.Env):
         # reward += (np.linalg.norm(self.prev_position - self.environment.getGoal()) - np.linalg.norm(pos - self.environment.getGoal()))*self.move_reward_scale #L2 for continuous
         reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
             np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
-
+        reward += np.allclose(self.environment.getGoal(),
+                              pos) * self.reach_end_reward
         reward += self.reward_dict[action]
 
         self.prev_position = pos
@@ -156,7 +161,7 @@ class MoogleMap(gym.Env):
 
     def get_mission_xml(self):
 
-        return self.environment.generateWorldXML("stone")
+        return self.environment.generateWorldXML("sandstone")
 
     def init_malmo(self):
         """
