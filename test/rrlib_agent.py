@@ -23,9 +23,10 @@ class MoogleMap(gym.Env):
         # Static Parameters
         self.world_size = 51
         self.obs_size = 5
-        self.move_reward_scale = 2
+        self.move_reward_scale = 3 #norm 2
         self.max_episode_steps = 100
         self.log_frequency = 10
+        self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -57,7 +58,7 @@ class MoogleMap(gym.Env):
         # DiamondCollector Parameters
         self.obs = None
         self.prev_position = np.array([0,0])
-        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=True)
+        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=self.flatland)
         
         #self.allow_break_action = False
         self.episode_step = 0
@@ -75,7 +76,7 @@ class MoogleMap(gym.Env):
 
         # Reset Variables
         self.returns.append(self.episode_return)
-        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=True)
+        self.environment = XMLenv(self.max_episode_steps, self.world_size,self.obs_size, flat_word=self.flatland)
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
         self.episode_return = 0

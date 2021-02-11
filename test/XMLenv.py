@@ -107,7 +107,7 @@ class XMLenv:
                 <Weather>clear</Weather>
               </ServerInitialConditions>
               <ServerHandlers>
-                  <FlatWorldGenerator generatorString=";"/>
+                  <FlatWorldGenerator generatorString="3;minecraft:sandstone,minecraft:sand;1;"/>
                   <DrawingDecorator>
                     ''' + self.Menger(blocktype,"glass") + '''
                   </DrawingDecorator>
