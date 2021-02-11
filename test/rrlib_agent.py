@@ -21,11 +21,11 @@ class MoogleMap(gym.Env):
 
     def __init__(self, env_config):  
         # Static Parameters
-        self.world_size = 51
+        self.world_size = 21
         self.obs_size = 5
-        self.move_reward_scale = 5 #norm 2
-        self.max_episode_steps = 100
-        self.log_frequency = 10
+        self.move_reward_scale = 3 #norm 2
+        self.max_episode_steps = 50
+        self.log_frequency = 2
         self.flatland = False
         self.reach_end_reward = 20
         self.action_dict = {
@@ -113,7 +113,7 @@ class MoogleMap(gym.Env):
         #For Discrete Actions
         
         command = self.action_dict[action]
-        self.agent_host.sendCommand(command)
+        #self.agent_host.sendCommand(command)
         time.sleep(.1)
         #print("STEP:",command)
         self.episode_step += 1
@@ -135,7 +135,7 @@ class MoogleMap(gym.Env):
         reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(np.abs(pos - self.environment.getGoal())))*self.move_reward_scale #L1 for discrete
         reward += np.allclose(self.environment.getGoal(),pos) * self.reach_end_reward
         reward += self.reward_dict[action]
-
+        #print(reward)
         self.prev_position = pos
         
         self.episode_return += reward
