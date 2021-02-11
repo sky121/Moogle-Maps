@@ -73,6 +73,7 @@ class MoogleMap(gym.Env):
 
         # for ploting the agent's trajectory
         self.coordinates = []
+        self.graph_num = 0
 
     def reset(self):
         """
@@ -99,8 +100,6 @@ class MoogleMap(gym.Env):
         self.coordinates.clear()
 
         # Reset Malmo and the envrionment
-        self.environment = XMLenv(
-            self.max_episode_steps, self.world_size, self.obs_size, flat_word=True)
         world_state = self.init_malmo()
 
         # Get Observation
@@ -253,7 +252,8 @@ class MoogleMap(gym.Env):
         xpos, ypos = zip(*self.coordinates)
         ax.plot(xpos, ypos)
         plt.title('Agent coordinate')
-        plt.savefig('AgentCoords.png')
+        plt.savefig(f'./trajectory_graphs/AgentCoords_{self.graph_num}.png')
+        self.graph_num += 1
 
     def log_returns(self):
         """
