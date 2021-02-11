@@ -23,10 +23,11 @@ class MoogleMap(gym.Env):
         # Static Parameters
         self.world_size = 51
         self.obs_size = 5
-        self.move_reward_scale = 3 #norm 2
+        self.move_reward_scale = 5 #norm 2
         self.max_episode_steps = 100
         self.log_frequency = 10
         self.flatland = False
+        self.reach_end_reward = 20
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -132,7 +133,7 @@ class MoogleMap(gym.Env):
 
         #reward += (np.linalg.norm(self.prev_position - self.environment.getGoal()) - np.linalg.norm(pos - self.environment.getGoal()))*self.move_reward_scale #L2 for continuous
         reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(np.abs(pos - self.environment.getGoal())))*self.move_reward_scale #L1 for discrete
-        
+        reward += np.allclose(self.environment.getGoal(),pos) * self.reach_end_reward
         reward += self.reward_dict[action]
 
         self.prev_position = pos
