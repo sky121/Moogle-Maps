@@ -14,7 +14,6 @@ class XMLenv:
         self.obs_size = obs_size
         self.terrain_array = self.getTerrain()
         self.center = self.size//2
-        self.location_reward_density = 0.5
         self.max_episode_steps = max_episode_steps
         i = math.floor(random.random()*size)
         j = math.floor(random.random()*size)
