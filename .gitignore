@@ -1,1 +1,5 @@
-test/trajectory_graphs/
+
+./test/trajectory_graphs/*
+./test/returns_graphs/*
+./test/returns.png
+./test/returns.txt
