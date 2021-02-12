@@ -28,7 +28,7 @@ class MoogleMap(gym.Env):
         self.obs_size = 5
 
         self.move_reward_scale = 2  # norm 2
-        self.reach_end_reward = 20
+
         self.reward_dict = {
             0: -1,  # Move one block forward
             1: -1,  # Turn 90 degrees to the right
@@ -47,7 +47,7 @@ class MoogleMap(gym.Env):
         }
 
         self.debug_obs = False
-        self.debug_turn = True
+        self.debug_turn = False
 
         # Rllib Parameters
         #self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
@@ -90,9 +90,11 @@ class MoogleMap(gym.Env):
         Returns
             observation: <np.array> flattened initial obseravtion
         """
+        # Reset Malmo and the envrionment
 
         self.returns.append(self.episode_return)
         self.dist_returns.append(self.episode_dist_return)
+
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
 
@@ -101,9 +103,11 @@ class MoogleMap(gym.Env):
                 len(self.returns) % self.log_frequency == 0:
             self.log_returns()
             self.log_dist_return()
+        # self.draw_agent_trajectory()
 
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
+        world_state = self.init_malmo()
 
         # Reset Variables
         self.episode_dist_return = 0
@@ -111,11 +115,8 @@ class MoogleMap(gym.Env):
         self.episode_step = 0
         self.coordinates.clear()
 
-        # Reset Malmo and the envrionment
-        world_state = self.init_malmo()
-
         # Get Observation
-        self.obs, self.prev_position = self.get_observation(world_state)
+        self.obs, self.prev_position, _ = self.get_observation(world_state)
 
         return self.obs
 
@@ -146,7 +147,7 @@ class MoogleMap(gym.Env):
         world_state = self.agent_host.getWorldState()
         for error in world_state.errors:
             print("Error:", error.text)
-        self.obs, pos = self.get_observation(world_state)
+        self.obs, pos, world_state = self.get_observation(world_state)
 
         # Get Done
         done = not world_state.is_mission_running
@@ -154,23 +155,22 @@ class MoogleMap(gym.Env):
         # Get Reward
         reward = 0
 
-        # reward += (np.linalg.norm(self.prev_position - self.environment.getGoal()) - np.linalg.norm(pos - self.environment.getGoal()))*self.move_reward_scale #L2 for continuous
-        reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
-            np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
-        reward = np.clip(reward, -self.move_reward_scale,
-                         self.move_reward_scale)
+        if not done:
+            reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
+                np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
+        #reward = np.clip(reward,-self.move_reward_scale,self.move_reward_scale)
 
         if self.debug_turn:
             print("[TURN DEBUG] Distance Reward:", reward)
         self.episode_dist_return += reward
 
-        reward += np.allclose(self.environment.getGoal(),
-                              pos) * self.reach_end_reward
         reward += self.reward_dict[action]
         if self.debug_turn:
             print("[TURN DEBUG] Total Reward:", reward)
         self.prev_position = pos
-        self.coordinates.append(pos)
+
+        if not done:
+            self.coordinates.append(pos)
 
         self.episode_return += reward
         #print("reward received:",reward)
@@ -250,7 +250,7 @@ class MoogleMap(gym.Env):
 
                 break
 
-        return obs, point
+        return obs, point, world_state
 
     def draw_agent_trajectory(self):
         plt.clf()
