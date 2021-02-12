@@ -175,7 +175,7 @@ class MoogleMap(gym.Env):
         max_retries = 3
         my_clients = MalmoPython.ClientPool()
         # add Minecraft machines here as available
-        my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 10000))
+        my_clients.add(MalmoPython.ClientInfo('127.0.0.1', 50000))
 
         for retry in range(max_retries):
             try:
