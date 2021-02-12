@@ -1,0 +1,18 @@
+"move 1" - move the agent one block forwards (1 = forwards, -1 = backwards).
+"jumpmove 1" - move the agent one block up and forwards (1 = forwards, -1 = backwards).
+"strafe 1" - move the agent one block sideways (1 = right, -1 = left).
+"jumpstrafe 1" - move the agent one block up and sideways (1 = right, -1 = left).
+"turn 1" - rotate the agent 90 degrees right (1 = right, -1 = left).
+"movenorth 1" - move the agent one block north.
+"moveeast 1" - move the agent one block east.
+"movesouth 1" - move the agent one block south.
+"movewest 1" - move the agent one block west.
+"jumpnorth 1" - move the agent one block up and north.
+"jumpeast 1" - move the agent one block up and east.
+"jumpsouth 1" - move the agent one block up and south.
+"jumpwest 1" - move the agent one block up and west.
+"jump 1" - move the agent one block up.
+"look 1" - look down by 45 degrees (-ve = up, +ve = down).
+"attack 1" - destroy the block that has focus.
+"use 1" - place the held block item on the block face that has focus.
+"jumpuse" - simultaneously jump and place the held block on the block face that has focus.
