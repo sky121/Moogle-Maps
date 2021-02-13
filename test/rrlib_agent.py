@@ -137,7 +137,7 @@ class MoogleMap(gym.Env):
         # For Discrete Actions
 
         command = self.action_dict[action]
-        self.agent_host.sendCommand(command)
+        #self.agent_host.sendCommand(command)
         time.sleep(.1)
         if self.debug_turn:
             print("[TURN DEBUG] Command:", command)
