@@ -28,6 +28,7 @@ class MoogleMap(gym.Env):
         self.obs_size = 5
 
         self.move_reward_scale = 2  # norm 2
+        self.end_reward = 10
 
         self.reward_dict = {
             0: -1,  # Move one block forward
@@ -37,7 +38,7 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 10
+        self.log_frequency = 5
         self.flatland = True
         self.action_dict = {
             0: 'move 1',  # Move one block forward
@@ -78,6 +79,7 @@ class MoogleMap(gym.Env):
 
         self.episode_dist_return = 0
         self.dist_returns = []
+        self.average_dist = self.get_average_dist()
 
         # for ploting the agent's trajectory
         self.coordinates = []
@@ -137,7 +139,7 @@ class MoogleMap(gym.Env):
         # For Discrete Actions
 
         command = self.action_dict[action]
-        #self.agent_host.sendCommand(command)
+        self.agent_host.sendCommand(command)
         time.sleep(.1)
         if self.debug_turn:
             print("[TURN DEBUG] Command:", command)
@@ -158,11 +160,17 @@ class MoogleMap(gym.Env):
         if not done:
             reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
                 np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
+        else:
+            for r in world_state.rewards:
+                reward += r.getValue()
+                self.episode_dist_return += 1/self.average_dist
+            
+            
         #reward = np.clip(reward,-self.move_reward_scale,self.move_reward_scale)
 
         if self.debug_turn:
             print("[TURN DEBUG] Distance Reward:", reward)
-        self.episode_dist_return += reward
+        self.episode_dist_return += reward / (self.average_dist * self.move_reward_scale)
 
         reward += self.reward_dict[action]
         if self.debug_turn:
@@ -181,7 +189,7 @@ class MoogleMap(gym.Env):
 
     def get_mission_xml(self):
 
-        return self.environment.generateWorldXML("sandstone")
+        return self.environment.generateWorldXML("sandstone", self.end_reward)
 
     def init_malmo(self):
         """
@@ -306,6 +314,7 @@ class MoogleMap(gym.Env):
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.dist_returns[1:], box, mode='same')
         plt.clf()
+        #plt.ylim(top=1)
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
         plt.ylabel('Distance Value')
@@ -317,6 +326,14 @@ class MoogleMap(gym.Env):
         with open('returns_dist.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
+
+    def get_average_dist(self):
+        a = np.zeros((self.world_size,self.world_size))
+        for i in range(self.world_size):
+            for j in range(self.world_size):
+                a[i,j] = abs(i-self.world_size//2) + abs(j-self.world_size//2)
+        return (np.sum(a) / (a.shape[0] * a.shape[1]))
+
 
 
 if __name__ == '__main__':
