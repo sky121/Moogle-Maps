@@ -38,7 +38,7 @@ class MoogleMap(gym.Env):
 
         self.max_episode_steps = 100
         self.log_frequency = 10
-        self.flatland = True
+        self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
