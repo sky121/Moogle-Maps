@@ -7,7 +7,7 @@
 {
     margin: 0;
     padding: 0;
-   
+    font-family: Copperplate, Helvetica, sans-serif;
 }
 .title
 {
@@ -108,3 +108,10 @@
 .active {
     background-color: var(--button-color);
 }
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+  }
