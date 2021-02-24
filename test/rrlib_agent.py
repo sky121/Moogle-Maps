@@ -89,6 +89,9 @@ class MoogleMap(gym.Env):
         self.dist_returns = []
         self.average_dist = self.get_average_dist()
 
+        self.start_time = time.time()
+        self.times = []
+
         # for ploting the agent's trajectory
         self.coordinates = []
         self.graph_num = 0
@@ -104,6 +107,7 @@ class MoogleMap(gym.Env):
 
         self.returns.append(self.episode_return)
         self.dist_returns.append(self.episode_dist_return)
+        self.times.append(time.time() - self.start_time)
 
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
@@ -113,6 +117,7 @@ class MoogleMap(gym.Env):
                 len(self.returns) % self.log_frequency == 0:
             self.log_returns()
             self.log_dist_return()
+            self.log_time_graph()
         # self.draw_agent_trajectory()
 
         self.environment = XMLenv(
@@ -127,6 +132,8 @@ class MoogleMap(gym.Env):
 
         # Get Observation
         self.obs, self.prev_position, _ = self.get_observation(world_state)
+
+        self.start_time = time.time()
 
         return self.obs
 
@@ -333,6 +340,28 @@ class MoogleMap(gym.Env):
 
         with open('returns_dist.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
+                f.write("{}\t{}\n".format(step, value))
+
+
+    def log_time_graph(self):
+
+        box = np.ones(self.log_frequency) / self.log_frequency
+
+        divlist = list(t/d for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
+
+        returns_smooth = np.convolve(divlist, box, mode='same')
+        plt.clf()
+        #plt.ylim(top=1)
+        plt.plot(self.steps[1:], returns_smooth)
+        plt.title('Moogle Map')
+        plt.ylabel('Time Spent / Distance Value')
+        plt.xlabel('Steps')
+        plt.savefig('time_per_distance_graph.png')
+
+        # plot the agent's trajectory
+
+        with open('returns_time.txt', 'w') as f:
+            for step, value in zip(self.steps[1:], divlist):
                 f.write("{}\t{}\n".format(step, value))
 
     def get_average_dist(self):
