@@ -296,7 +296,7 @@ class MoogleMap(gym.Env):
         xpos, ypos = zip(*self.coordinates)
         ax.plot(xpos, ypos)
         plt.title('Agent coordinate')
-        plt.savefig(f'./trajectory_graphs/AgentCoords_{self.graph_num}.png')
+        plt.savefig(f'./data/trajectory_graphs/AgentCoords_{self.graph_num}.png')
         self.graph_num += 1
 
     def log_returns(self):
@@ -308,7 +308,7 @@ class MoogleMap(gym.Env):
             returns (list): list of total return of each episode
         """
         # plot the agent's trajectory
-        self.draw_agent_trajectory()
+        #self.draw_agent_trajectory()
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.returns[1:], box, mode='same')
@@ -318,9 +318,9 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('returns.png')
+        plt.savefig('data/returns.png')
 
-        with open('returns.txt', 'w') as f:
+        with open('data/returns.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
@@ -334,11 +334,11 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Distance Value')
         plt.xlabel('Steps')
-        plt.savefig('returns_dist.png')
+        plt.savefig('data/returns_dist.png')
 
         # plot the agent's trajectory
 
-        with open('returns_dist.txt', 'w') as f:
+        with open('data/returns_dist.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
@@ -356,11 +356,11 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Time Spent / Distance Value')
         plt.xlabel('Steps')
-        plt.savefig('time_per_distance_graph.png')
+        plt.savefig('data/time_per_distance_graph.png')
 
         # plot the agent's trajectory
 
-        with open('returns_time.txt', 'w') as f:
+        with open('data/returns_time.txt', 'w') as f:
             for step, value in zip(self.steps[1:], divlist):
                 f.write("{}\t{}\n".format(step, value))
 
