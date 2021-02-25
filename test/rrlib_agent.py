@@ -37,6 +37,11 @@ class MoogleMap(gym.Env):
         except:
             pass
 
+        try:
+            os.mkdir("./data/trajectory_graphs/")
+        except:
+            pass
+
         # Static Parameters
         self.world_size = 51
         self.obs_size = 15
@@ -53,7 +58,7 @@ class MoogleMap(gym.Env):
 
         self.max_episode_steps = 100
         self.log_frequency = 1
-        self.flatland = False
+        self.flatland = True
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -124,7 +129,7 @@ class MoogleMap(gym.Env):
             self.log_returns()
             self.log_dist_return()
             self.log_time_graph()
-        #self.draw_agent_trajectory()
+            self.draw_agent_trajectory()
 
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
