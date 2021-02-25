@@ -26,20 +26,20 @@ class MyModel(TorchModelV2, nn.Module):
 
     def forward(self, input_dict, state, seq_lens):
 
-        # print(input_dict)
+      
         x = input_dict['obs']
-        # print(x)
-        # print(x.size())
-        self.distance = x[:, :2]
-        x = x[:, 2:]
-        x = x.reshape(x.shape[0], 1, 15, 15)
+
+        self.distance = x[:,:2]
+        x = x[:,2:]
+        x = x.reshape(x.shape[0],1,15, 15)
         x = x.type(torch.float32)
 
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
 
         x = x.flatten(start_dim=1)
-        x = torch.cat((self.distance, x), 1)
+
+        x = torch.cat((self.distance,x), 1)
 
         x = F.relu(self.dense_layer_1(x))
         x = F.relu(self.dense_layer_2(x))

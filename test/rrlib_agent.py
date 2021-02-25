@@ -39,6 +39,11 @@ class MoogleMap(gym.Env):
         except:
             pass
 
+        try:
+            os.mkdir("./data/trajectory_graphs/")
+        except:
+            pass
+
         # Static Parameters
         self.world_size = 51
         self.obs_size = 15
