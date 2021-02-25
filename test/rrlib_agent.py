@@ -39,7 +39,7 @@ class MoogleMap(gym.Env):
 
         # Static Parameters
         self.world_size = 51
-        self.obs_size = 15
+        self.obs_size = 9
 
         self.move_reward_scale = 2  # norm 2
         self.end_reward = 10
@@ -52,7 +52,7 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 1
+        self.log_frequency = 10
         self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
