@@ -15,9 +15,11 @@ class MyModel(TorchModelV2, nn.Module):
         self.conv2 = nn.Conv2d(16, 32, kernel_size = 3)
 
 
-        self.dense_layer = nn.Linear(32*11*11+2, 64)
-        self.policy_layer = nn.Linear(64, 4)
-        self.value_layer = nn.Linear(64, 1)
+        self.dense_layer_1 = nn.Linear(32*11*11+2, 64)
+        self.dense_layer_2 = nn.Linear(64,32)
+
+        self.policy_layer = nn.Linear(32, 4)
+        self.value_layer = nn.Linear(32, 1)
         
         self.distance = None
         self.value = None
@@ -39,7 +41,9 @@ class MyModel(TorchModelV2, nn.Module):
         x = x.flatten(start_dim=1)
         x = torch.cat((self.distance,x), 1)
 
-        x = F.relu(self.dense_layer(x))
+        x = F.relu(self.dense_layer_1(x))
+        x = F.relu(self.dense_layer_2(x))
+
         policy = self.policy_layer(x)
         self.value = self.value_layer(x)
         

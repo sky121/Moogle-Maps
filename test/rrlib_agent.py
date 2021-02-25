@@ -347,7 +347,7 @@ class MoogleMap(gym.Env):
 
         box = np.ones(self.log_frequency) / self.log_frequency
 
-        divlist = list(t/d for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
+        divlist = list(t/d if d != 0 else float("inf") for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
 
         returns_smooth = np.convolve(divlist, box, mode='same')
         plt.clf()
