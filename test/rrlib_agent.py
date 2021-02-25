@@ -19,13 +19,21 @@ from ray.rllib.agents import ppo
 from XMLenv import XMLenv
 from Observations import DiscreteObservation
 
+#for custom model
+import torch
+from torch import nn
+import torch.nn.functional as F
+from ray.rllib.agents import ppo
+from ray.rllib.models import ModelCatalog
+from ray.rllib.models.torch.torch_modelv2 import TorchModelV2 
+from MyModel import MyModel
 
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):
         # Static Parameters
         self.world_size = 51
-        self.obs_size = 5
+        self.obs_size = 15
 
         self.move_reward_scale = 2  # norm 2
         self.end_reward = 10
@@ -38,8 +46,8 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 1
-        self.flatland = True
+        self.log_frequency = 5
+        self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -171,8 +179,8 @@ class MoogleMap(gym.Env):
             for r in world_state.rewards:
                 reward += r.getValue()
                 self.episode_dist_return += 1/self.average_dist
-            
-            
+
+
         #reward = np.clip(reward,-self.move_reward_scale,self.move_reward_scale)
 
         if self.debug_turn:
@@ -264,7 +272,7 @@ class MoogleMap(gym.Env):
                 point = np.array([observations['XPos'], observations['ZPos']])
 
                 break
-
+       
         return obs, point, world_state
 
     def draw_agent_trajectory(self):
@@ -320,7 +328,7 @@ class MoogleMap(gym.Env):
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.dist_returns[1:], box, mode='same')
-        plt.clf()
+        plt.clf()        
         #plt.ylim(top=1)
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
@@ -366,12 +374,19 @@ class MoogleMap(gym.Env):
 
 
 if __name__ == '__main__':
+    ModelCatalog.register_custom_model('my_model', MyModel)
+
     ray.init()
     trainer = ppo.PPOTrainer(env=MoogleMap, config={
         'env_config': {},           # No environment parameters to configure
         'framework': 'torch',       # Use pyotrch instead of tensorflow
         'num_gpus': 0,              # We aren't using GPUs
-        'num_workers': 0            # We aren't using parallelism
+        'num_workers': 0,            # We aren't using parallelism
+        'model': {
+            'custom_model': 'my_model',
+            'custom_model_config': {}
+        }
+
     })
 
     while True:
