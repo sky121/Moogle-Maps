@@ -32,7 +32,10 @@ from MyModel import MyModel
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):
-        os.mkdir("./data")
+        try:
+            os.mkdir("./data")
+        except:
+            pass
 
         # Static Parameters
         self.world_size = 51
