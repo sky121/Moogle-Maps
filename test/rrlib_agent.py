@@ -18,6 +18,7 @@ from gym.spaces import Discrete, Box
 from ray.rllib.agents import ppo
 from XMLenv import XMLenv
 from Observations import DiscreteObservation
+import os
 
 #for custom model
 import torch
@@ -31,6 +32,8 @@ from MyModel import MyModel
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):
+        os.mkdir("./data")
+
         # Static Parameters
         self.world_size = 51
         self.obs_size = 15
@@ -46,7 +49,7 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 5
+        self.log_frequency = 1
         self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
@@ -118,7 +121,7 @@ class MoogleMap(gym.Env):
             self.log_returns()
             self.log_dist_return()
             self.log_time_graph()
-        # self.draw_agent_trajectory()
+        #self.draw_agent_trajectory()
 
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
@@ -318,9 +321,9 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Return')
         plt.xlabel('Steps')
-        plt.savefig('data/returns.png')
+        plt.savefig('./data/returns.png')
 
-        with open('data/returns.txt', 'w') as f:
+        with open('./data/returns.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
@@ -334,11 +337,11 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Distance Value')
         plt.xlabel('Steps')
-        plt.savefig('data/returns_dist.png')
+        plt.savefig('./data/returns_dist.png')
 
         # plot the agent's trajectory
 
-        with open('data/returns_dist.txt', 'w') as f:
+        with open('./data/returns_dist.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
@@ -356,11 +359,11 @@ class MoogleMap(gym.Env):
         plt.title('Moogle Map')
         plt.ylabel('Time Spent / Distance Value')
         plt.xlabel('Steps')
-        plt.savefig('data/time_per_distance_graph.png')
+        plt.savefig('./data/time_per_distance_graph.png')
 
         # plot the agent's trajectory
 
-        with open('data/returns_time.txt', 'w') as f:
+        with open('./data/returns_time.txt', 'w') as f:
             for step, value in zip(self.steps[1:], divlist):
                 f.write("{}\t{}\n".format(step, value))
 
