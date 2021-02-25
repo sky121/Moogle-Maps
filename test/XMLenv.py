@@ -98,7 +98,7 @@ class XMLenv:
     def drawCuboid(self, x1, y1, z1, x2, y2, z2, blocktype):
         return '<DrawCuboid x1="' + str(x1) + '" y1="' + str(y1) + '" z1="' + str(z1) + '" x2="' + str(x2) + '" y2="' + str(y2) + '" z2="' + str(z2) + '" type="' + blocktype + '"/>'
 
-    def generateWorldXML(self, blocktype):
+    def generateWorldXML(self, blocktype, end_reward):
         missionXML = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             
@@ -125,7 +125,7 @@ class XMLenv:
               </ServerSection>
               
               <AgentSection mode="Survival">
-                <Name>MalmoTutorialBot</Name>
+                <Name>Moogle Maps</Name>
                 <AgentStart>
                     <Placement x="'''+str(self.start_coordinate[0])+'''" y="'''+str(self.start_coordinate[1])+'''" z="'''+str(self.start_coordinate[2])+'''" yaw="90"/>
       
@@ -134,6 +134,9 @@ class XMLenv:
                   <DiscreteMovementCommands/>
                   <ObservationFromFullStats/>
                   <ObservationFromRay/>
+                  <RewardForTouchingBlockType>
+                    <Block type='red_sandstone' reward="'''+ str(end_reward) +'''"/>
+                  </RewardForTouchingBlockType>
                   <ObservationFromGrid>
                       <Grid name="floorAll">
                         <min x="-'''+str(int(self.obs_size/2))+'''" y="-1" z="-'''+str(int(self.obs_size/2))+'''"/>

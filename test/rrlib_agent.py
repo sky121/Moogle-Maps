@@ -19,13 +19,21 @@ from ray.rllib.agents import ppo
 from XMLenv import XMLenv
 from Observations import DiscreteObservation
 
+#for custom model
+import torch
+from torch import nn
+import torch.nn.functional as F
+from ray.rllib.agents import ppo
+from ray.rllib.models import ModelCatalog
+from ray.rllib.models.torch.torch_modelv2 import TorchModelV2 
+from MyModel import MyModel
 
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):
         # Static Parameters
         self.world_size = 51
-        self.obs_size = 5
+        self.obs_size = 15
 
         self.move_reward_scale = 2  # norm 2
         self.end_reward = 10
@@ -39,7 +47,7 @@ class MoogleMap(gym.Env):
 
         self.max_episode_steps = 100
         self.log_frequency = 5
-        self.flatland = True
+        self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -81,6 +89,9 @@ class MoogleMap(gym.Env):
         self.dist_returns = []
         self.average_dist = self.get_average_dist()
 
+        self.start_time = time.time()
+        self.times = []
+
         # for ploting the agent's trajectory
         self.coordinates = []
         self.graph_num = 0
@@ -96,6 +107,7 @@ class MoogleMap(gym.Env):
 
         self.returns.append(self.episode_return)
         self.dist_returns.append(self.episode_dist_return)
+        self.times.append(time.time() - self.start_time)
 
         current_step = self.steps[-1] if len(self.steps) > 0 else 0
         self.steps.append(current_step + self.episode_step)
@@ -105,7 +117,8 @@ class MoogleMap(gym.Env):
                 len(self.returns) % self.log_frequency == 0:
             self.log_returns()
             self.log_dist_return()
-        # self.draw_agent_trajectory()
+            self.log_time_graph()
+            #self.draw_agent_trajectory()
 
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
@@ -119,6 +132,8 @@ class MoogleMap(gym.Env):
 
         # Get Observation
         self.obs, self.prev_position, _ = self.get_observation(world_state)
+
+        self.start_time = time.time()
 
         return self.obs
 
@@ -257,7 +272,7 @@ class MoogleMap(gym.Env):
                 point = np.array([observations['XPos'], observations['ZPos']])
 
                 break
-
+       
         return obs, point, world_state
 
     def draw_agent_trajectory(self):
@@ -293,7 +308,6 @@ class MoogleMap(gym.Env):
             returns (list): list of total return of each episode
         """
         # plot the agent's trajectory
-        self.draw_agent_trajectory()
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.returns[1:], box, mode='same')
@@ -313,8 +327,8 @@ class MoogleMap(gym.Env):
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.dist_returns[1:], box, mode='same')
-        plt.clf()
-        # plt.ylim(top=1)
+        plt.clf()        
+        #plt.ylim(top=1)
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
         plt.ylabel('Distance Value')
@@ -327,6 +341,28 @@ class MoogleMap(gym.Env):
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
 
+
+    def log_time_graph(self):
+
+        box = np.ones(self.log_frequency) / self.log_frequency
+
+        divlist = list(t/d for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
+
+        returns_smooth = np.convolve(divlist, box, mode='same')
+        plt.clf()
+        #plt.ylim(top=1)
+        plt.plot(self.steps[1:], returns_smooth)
+        plt.title('Moogle Map')
+        plt.ylabel('Time Spent / Distance Value')
+        plt.xlabel('Steps')
+        plt.savefig('time_per_distance_graph.png')
+
+        # plot the agent's trajectory
+
+        with open('returns_time.txt', 'w') as f:
+            for step, value in zip(self.steps[1:], divlist):
+                f.write("{}\t{}\n".format(step, value))
+
     def get_average_dist(self):
         a = np.zeros((self.world_size, self.world_size))
         for i in range(self.world_size):
@@ -336,12 +372,19 @@ class MoogleMap(gym.Env):
 
 
 if __name__ == '__main__':
+    ModelCatalog.register_custom_model('my_model', MyModel)
+
     ray.init()
     trainer = ppo.PPOTrainer(env=MoogleMap, config={
         'env_config': {},           # No environment parameters to configure
         'framework': 'torch',       # Use pyotrch instead of tensorflow
         'num_gpus': 0,              # We aren't using GPUs
-        'num_workers': 0            # We aren't using parallelism
+        'num_workers': 0,            # We aren't using parallelism
+        'model': {
+            'custom_model': 'my_model',
+            'custom_model_config': {}
+        }
+
     })
 
     while True:
