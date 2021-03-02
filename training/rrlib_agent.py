@@ -50,7 +50,7 @@ class MoogleMap(gym.Env):
         self.world_size = 51
         self.obs_size = 9
 
-        self.move_reward_scale = 2  # norm 2
+        self.move_reward_scale = 5  # norm 2
         self.end_reward = 10
 
         self.reward_dict = {
@@ -61,7 +61,7 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 100
+        self.log_frequency = 500
         self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
@@ -126,7 +126,9 @@ class MoogleMap(gym.Env):
             self.log_returns()
             self.log_dist_return()
             self.log_time_graph()
-            self.draw_agent_trajectory()
+            try:
+                self.draw_agent_trajectory()
+            except: pass
 
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
@@ -349,7 +351,7 @@ if __name__ == '__main__':
     i = 0
     while True:
         print(trainer.train())
-        if i % 1000 == 0:
+        if i % 50 == 0:
             checkpoint = trainer.save("./data/models")
             print("checkpoint saved at", checkpoint)
         i+=1

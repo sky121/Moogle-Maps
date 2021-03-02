@@ -10,11 +10,11 @@ class MyModel(TorchModelV2, nn.Module):
         TorchModelV2.__init__(self, *args, **kargs)
         nn.Module.__init__(self)
 
-        self.conv1 = nn.Conv2d(1, 8, kernel_size = 3)
-        self.conv2 = nn.Conv2d(8, 16, kernel_size = 3)
+        self.conv1 = nn.Conv2d(1, 16, kernel_size = 3)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size = 3)
 
-        self.dense_layer_1 = nn.Linear(16*5*5, 32)
-        self.dense_layer_2 = nn.Linear(32+2,16)
+        self.dense_layer_1 = nn.Linear(32*5*5+2, 32)
+        self.dense_layer_2 = nn.Linear(32,16)
 
         self.policy_layer = nn.Linear(16, 4)
         self.value_layer = nn.Linear(16, 1)
@@ -37,11 +37,9 @@ class MyModel(TorchModelV2, nn.Module):
         x = F.relu(self.conv2(x))
 
         x = x.flatten(start_dim=1)
-
-        x = F.relu(self.dense_layer_1(x))
-
         x = torch.cat((self.distance, x), 1)
 
+        x = F.relu(self.dense_layer_1(x))
         x = F.relu(self.dense_layer_2(x))
 
         policy = self.policy_layer(x)
