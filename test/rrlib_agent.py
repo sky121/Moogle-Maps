@@ -20,20 +20,22 @@ from XMLenv import XMLenv
 from Observations import DiscreteObservation
 import os
 
-#for custom model
+# for custom model
 import torch
 from torch import nn
 import torch.nn.functional as F
 from ray.rllib.agents import ppo
 from ray.rllib.models import ModelCatalog
-from ray.rllib.models.torch.torch_modelv2 import TorchModelV2 
+from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from MyModel import MyModel
+
 
 class MoogleMap(gym.Env):
 
     def __init__(self, env_config):
         try:
             os.mkdir("./data")
+            os.mkdir("./data/trajectory_graphs")
         except:
             pass
 
@@ -44,7 +46,7 @@ class MoogleMap(gym.Env):
 
         # Static Parameters
         self.world_size = 51
-        self.obs_size = 15
+        self.obs_size = 9
 
         self.move_reward_scale = 2  # norm 2
         self.end_reward = 10
@@ -57,8 +59,8 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 1
-        self.flatland = True
+        self.log_frequency = 10
+        self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
             1: 'turn 1',  # Turn 90 degrees to the right
@@ -70,7 +72,7 @@ class MoogleMap(gym.Env):
         self.debug_turn = False
 
         # Rllib Parameters
-        #self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
+        # self.action_space = Box(-1,1,shape=(3,), dtype=np.float32)
         self.action_space = Discrete(len(self.action_dict))
         self.obseravtion = DiscreteObservation(self.obs_size, self.world_size)
         self.observation_space = self.obseravtion.getBox()
@@ -90,7 +92,7 @@ class MoogleMap(gym.Env):
         self.environment = XMLenv(
             self.max_episode_steps, self.world_size, self.obs_size, flat_word=self.flatland)
 
-        #self.allow_break_action = False
+        # self.allow_break_action = False
         self.episode_step = 0
         self.episode_return = 0
         self.returns = []
@@ -191,12 +193,12 @@ class MoogleMap(gym.Env):
                 reward += r.getValue()
                 self.episode_dist_return += 1/self.average_dist
 
-
-        #reward = np.clip(reward,-self.move_reward_scale,self.move_reward_scale)
+        # reward = np.clip(reward,-self.move_reward_scale,self.move_reward_scale)
 
         if self.debug_turn:
             print("[TURN DEBUG] Distance Reward:", reward)
-        self.episode_dist_return += reward / (self.average_dist * self.move_reward_scale)
+        self.episode_dist_return += reward / \
+            (self.average_dist * self.move_reward_scale)
 
         reward += self.reward_dict[action]
         if self.debug_turn:
@@ -207,7 +209,7 @@ class MoogleMap(gym.Env):
             self.coordinates.append(pos)
 
         self.episode_return += reward
-        #print("reward received:",reward)
+        # print("reward received:",reward)
 
         #time.sleep(60) ####
 
@@ -254,7 +256,7 @@ class MoogleMap(gym.Env):
 
     def get_observation(self, world_state):
         """
-        Use the agent observation API to get a flattened 2 x 5 x 5 grid around the agent. 
+        Use the agent observation API to get a flattened 2 x 5 x 5 grid around the agent.
         The agent is in the center square facing up.
 
         Args
@@ -283,13 +285,23 @@ class MoogleMap(gym.Env):
                 point = np.array([observations['XPos'], observations['ZPos']])
 
                 break
-       
+
         return obs, point, world_state
 
     def draw_agent_trajectory(self):
         plt.clf()
         fig = plt.figure()
         ax = fig.add_subplot()
+        x = np.linspace(-self.world_size//2,
+                        self.world_size//2, self.world_size)
+        y = np.linspace(-self.world_size//2,
+                        self.world_size//2, self.world_size)
+        X, Y = np.meshgrid(x, y)
+        Z = self.environment.terrain_array[self.obs_size:self.world_size +
+                                           self.obs_size, self.obs_size:self.world_size+self.obs_size]
+        plt.contourf(X, Y, Z, cmap='RdGy')
+        plt.colorbar()
+
         # Move left y-axis and bottim x-axis to centre, passing through (0,0)
         ax.spines['left'].set_position('center')
         ax.spines['bottom'].set_position('center')
@@ -300,14 +312,16 @@ class MoogleMap(gym.Env):
         ax.scatter(
             self.environment.start_coordinate[0], self.environment.start_coordinate[2], c="b")
         ax.scatter(
-            self.environment.end_coordinate[0], self.environment.end_coordinate[2], c="r")
+            self.environment.end_coordinate[0], self.environment.end_coordinate[2], c="m")
 
         plt.xlim([-self.world_size/2, self.world_size/2])
         plt.ylim([-self.world_size/2, self.world_size/2])
         xpos, ypos = zip(*self.coordinates)
         ax.plot(xpos, ypos)
+
         plt.title('Agent coordinate')
-        plt.savefig(f'./data/trajectory_graphs/AgentCoords_{self.graph_num}.png')
+        plt.savefig(
+            f'./data/trajectory_graphs/AgentCoords_{self.graph_num}.png')
         self.graph_num += 1
 
     def log_returns(self):
@@ -318,13 +332,11 @@ class MoogleMap(gym.Env):
             steps (list): list of global steps after each episode
             returns (list): list of total return of each episode
         """
-        # plot the agent's trajectory
-        #self.draw_agent_trajectory()
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.returns[1:], box, mode='same')
         plt.clf()
-        #print(f"debug for self.")
+        # print(f"debug for self.")
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
         plt.ylabel('Return')
@@ -339,49 +351,44 @@ class MoogleMap(gym.Env):
 
         box = np.ones(self.log_frequency) / self.log_frequency
         returns_smooth = np.convolve(self.dist_returns[1:], box, mode='same')
-        plt.clf()        
-        #plt.ylim(top=1)
+        plt.clf()
+        # plt.ylim(top=1)
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
         plt.ylabel('Distance Value')
         plt.xlabel('Steps')
         plt.savefig('./data/returns_dist.png')
 
-        # plot the agent's trajectory
-
         with open('./data/returns_dist.txt', 'w') as f:
             for step, value in zip(self.steps[1:], self.dist_returns[1:]):
                 f.write("{}\t{}\n".format(step, value))
-
 
     def log_time_graph(self):
 
         box = np.ones(self.log_frequency) / self.log_frequency
 
-        divlist = list(t/d if d != 0 else float("inf") for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
+        divlist = list(t/d if d != 0 else float("inf")
+                       for (d, t) in zip(self.dist_returns[1:], self.times[1:]))
 
         returns_smooth = np.convolve(divlist, box, mode='same')
         plt.clf()
-        #plt.ylim(top=1)
+        # plt.ylim(top=1)
         plt.plot(self.steps[1:], returns_smooth)
         plt.title('Moogle Map')
         plt.ylabel('Time Spent / Distance Value')
         plt.xlabel('Steps')
         plt.savefig('./data/time_per_distance_graph.png')
 
-        # plot the agent's trajectory
-
         with open('./data/returns_time.txt', 'w') as f:
             for step, value in zip(self.steps[1:], divlist):
                 f.write("{}\t{}\n".format(step, value))
 
     def get_average_dist(self):
-        a = np.zeros((self.world_size,self.world_size))
+        a = np.zeros((self.world_size, self.world_size))
         for i in range(self.world_size):
             for j in range(self.world_size):
-                a[i,j] = abs(i-self.world_size//2) + abs(j-self.world_size//2)
+                a[i, j] = abs(i-self.world_size//2) + abs(j-self.world_size//2)
         return (np.sum(a) / (a.shape[0] * a.shape[1]))
-
 
 
 if __name__ == '__main__':

@@ -135,7 +135,7 @@ class XMLenv:
                   <ObservationFromFullStats/>
                   <ObservationFromRay/>
                   <RewardForTouchingBlockType>
-                    <Block type='red_sandstone' reward="'''+ str(end_reward) +'''"/>
+                    <Block type='red_sandstone' reward="''' + str(end_reward) + '''"/>
                   </RewardForTouchingBlockType>
                   <ObservationFromGrid>
                       <Grid name="floorAll">
