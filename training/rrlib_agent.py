@@ -61,7 +61,7 @@ class MoogleMap(gym.Env):
         }
 
         self.max_episode_steps = 100
-        self.log_frequency = 500
+        self.log_frequency = 100
         self.flatland = False
         self.action_dict = {
             0: 'move 1',  # Move one block forward
@@ -181,6 +181,8 @@ class MoogleMap(gym.Env):
         if not done:
             reward += (np.sum(np.abs(self.prev_position - self.environment.getGoal())) - np.sum(
                 np.abs(pos - self.environment.getGoal())))*self.move_reward_scale  # L1 for discrete
+            if reward<0:
+                reward/=2
             self.episode_dist_return += reward / (self.average_dist * self.move_reward_scale)
         else:
             if self.environment.inGoal(self.agent.getPosition()):
@@ -350,7 +352,7 @@ if __name__ == '__main__':
 
     i = 0
     while True:
-        print(trainer.train())
+        print("episode_reward_mean:",trainer.train()['episode_reward_mean'])
         if i % 50 == 0:
             checkpoint = trainer.save("./data/models")
             print("checkpoint saved at", checkpoint)

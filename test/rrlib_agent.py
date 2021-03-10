@@ -406,6 +406,7 @@ if __name__ == '__main__':
         }
 
     })
+    trainer.restore('./checkpoint_1234/checkpoint-1234')
 
     while True:
         print(trainer.train())
