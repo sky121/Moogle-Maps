@@ -278,7 +278,7 @@ class MoogleMap(gym.Env):
                 # First we get the json from the observation API
                 msg = world_state.observations[-1].text
                 observations = json.loads(msg)
-
+                print(observations)
                 # Get observation
                 obs = self.obseravtion.getObservation(
                     self.environment.terrain_array, observations['XPos'], observations['ZPos'], observations['YPos'], observations['Yaw'], self.environment.getGoal(), self.debug_obs)
@@ -406,7 +406,7 @@ if __name__ == '__main__':
         }
 
     })
-    trainer.restore('./checkpoint_1234/checkpoint-1234')
+    trainer.restore('./checkpoint_2751/checkpoint-2751')
 
     while True:
         print(trainer.train())
